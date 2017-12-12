@@ -17,7 +17,7 @@ module radiator() {
 	// Radiator dimensions: 140mm x 312mm x 26mm
 	// Fan dimensions: 140mm x 25mm
 	//scale([1, -1, 1]) cube([26+25, 312, 140]);
-	scale([1, -1, 1]) cube([30+25, 276, 125]);
+	color("blue") scale([1, -1, 1]) cube([30+25, 276, 125]);
 }
 
 module standoffs() {
@@ -101,7 +101,20 @@ module tray(offset = 12) {
 	standoffs() color("yellow") cylinder(d=4, h=offset, $fn=12);
 }
 
-tray();
-//top_radiator();
+translate([inch(-4.8), 130, 6]) {
+	tray();
+	top_radiator();
+}
 
-//translate([inch(4.8), -120, 0]) zcube([320, 280, 140]);
+color([0.8, 0.8, 1.0, 0.2]) {
+	rcube([340, 340, 6], d=40);
+	translate([0, 0, 154]) rcube([340, 340, 6], d=40);
+}
+
+color([0.6, 0.8, 1.0, 0.3]) {
+	render() difference() {
+		translate([0, 0, 6]) zcube([320, 320, 160-12]);
+		zcube([300, 300, 160]);
+	}
+	
+}
