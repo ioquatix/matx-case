@@ -107,6 +107,10 @@ translate([inch(-4.8), 130, 6]) {
 }
 
 color([0.8, 0.8, 1.0, 0.2]) {
+// color("blue") translate([15, -135, 10]) zcube([140, 30, 140]);
+color("blue") translate([-90, -140, 20]) zcube([120, 25, 120]);
+color("blue") translate([-90 + 4 + 120, -140, 20]) zcube([120, 25, 120]);
+
 	rcube([340, 340, 6], d=40);
 	translate([0, 0, 154]) rcube([340, 340, 6], d=40);
 }
