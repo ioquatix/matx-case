@@ -34,10 +34,10 @@ module standoffs() {
 	}
 }
 
-module pci_connectors(inset = inch(-0.6), factor = 0.5) {
+module pci_connectors(inset = inch(-0.6), factor = 0.5, count = 4) {
 	// This is the position of pin 0 is given when factor is 0, otherwise when factor = 0.5 it's the midpoints.
 	translate([inch(-1.2), inset, 0]) {
-		for (x = [0:1:3])
+		for (x = [0:1:count-1])
 			translate([inch(0.8*(x+factor)), 0, 0]) children();
 	}
 }
@@ -77,21 +77,29 @@ module rear_pci_cutout(width = 14) {
 		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 50]);
 		
 		// TODO Just eyeballed this.
-		translate([9.215, 4.95, 108.8-6]) #hole(4, 6);
+		translate([9.215, 4.95, 108.8-5]) #hole(3, 5);
 		
 		// TODO Just eyeballed this.
 		translate([2.7, 8.95, 107]) zcube([8, 4, 6]);
 	}
 }
 
-internal_size = [308, 308, 160];
+module rear_pci_bracket(width = 14) {
+	pci_connectors(inch(0.483), 0.5) {
+		translate([inch(0.1), 6, 108.8-6]) rcube([inch(0.9), 10, 6], 6);
+	}
+}
 
-module walls(dimensions = internal_size, thickness = 6) {
+module walls(dimensions, thickness = 6) {
 	render() difference() {
 		color([0.2, 0.2, 0.2, 0.7]) {
 			render() difference() {
 				translate([0, 0, 6]) rcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]-12], d=20);
 				zcube(dimensions);
+			}
+			
+			bottom_tray(dimensions, 12) {
+				rear_pci_bracket();
 			}
 		}
 		
@@ -108,7 +116,7 @@ module walls(dimensions = internal_size, thickness = 6) {
 }
 
 module front_fan(dimensions) {
-	translate([-80, -dimensions[1]/2, 140/2+10]) rotate([90, 0, 0]) children();
+	translate([-70-2.25, -dimensions[1]/2, 140/2+10]) rotate([90, 0, 0]) children();
 }
 
 module top_radiator(dimensions) {
@@ -116,7 +124,7 @@ module top_radiator(dimensions) {
 }
 
 module back_power_supply(dimensions) {
-	translate([10, dimensions[1]/2, dimensions[2]-6]) rotate([0, 0, 180]) children();
+	translate([10, dimensions[1]/2, dimensions[2]-6-4]) rotate([0, 0, 180]) children();
 }
 
 module bottom_tray(dimensions, offset = 12) {
