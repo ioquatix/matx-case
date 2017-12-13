@@ -54,7 +54,7 @@ module motherboard(thickness=1.6) {
 	}
 	
 	
-	translate([6.64, -46.94, 0]) pci_card();
+	//translate([6.64, -46.94, 0]) pci_card();
 	translate([47.28, -46.94, 0]) pci_card();
 	
 	color("grey") {
