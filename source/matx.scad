@@ -1,5 +1,6 @@
 
 $tolerance = 0.1;
+$fn = 4*3;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -150,10 +151,52 @@ module case(dimensions = internal_size, board_offset = 12) {
 	// bottom and top of case
 	color([0.8, 0.8, 1.0, 0.2]) {
 		rcube([340, 340, 6], d=40);
-	//	translate([0, 0, 154]) rcube([340, 340, 6], d=40);
+		//translate([0, 0, dimensions[2] - 6]) rcube([340, 340, 6], d=40);
 	}
 
-	walls();
+	walls(dimensions);
 }
 
-case();
+module corner_mask(dimensions, outset = 10, thickness = 6) {
+	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
+		translate([-outset+thickness, -outset+thickness, 0]) cube([outset, outset, dimensions[2]]);
+
+		translate([thickness/2, -outset, 0]) cube([thickness/2, outset, dimensions[2]]);
+		translate([-outset, thickness/2, 0]) cube([outset, thickness/2, dimensions[2]]);
+	}
+}
+
+module join_edge(length, width = 1, height = 10, count = 11, zig = 0.2) {
+	step = (length / (count+0.5)) / 4;
+	offset = step * zig;
+	
+	for (i = [0:1:count]) {
+		translate([0, i*step*4, 0]) linear_extrude(height=height) polygon([
+			[-width, 0],
+			[-width, step+offset],
+			[width, step-offset],
+			[width, step*3+offset],
+			[-width, step*3-offset],
+			[-width, step*4],
+		]);
+	}
+}
+
+module join_mask(dimensions, thickness = 6, width = 1) {
+	translate([0, 0, thickness]) {
+		rotate([90, 0, 0]) join_edge(dimensions[2]-thickness*2, height=dimensions[1]/2+thickness+$tolerance, width=width);
+		
+		translate([-width, 0, 0]) rotate([0, 0, 180]) cube([dimensions[0]/2-width, dimensions[1]/2+thickness, dimensions[2]-thickness*2]);
+	}
+}
+
+internal_size = [308, 308, 160];
+intersection() {
+	difference() {
+		walls(internal_size);
+		color("purple") zcorners() corner_mask(internal_size);
+	}
+	
+	color("red") join_mask(internal_size);
+}
+
