@@ -101,7 +101,8 @@ module tray(offset = 12) {
 	standoffs() color("yellow") cylinder(d=4, h=offset, $fn=12);
 }
 
-translate([inch(-4.8), 130, 6]) {
+// TODO fix these arbitrary numbers:
+translate([inch(-4.8)+7, 137.732, 6]) {
 	tray();
 	top_radiator();
 }
