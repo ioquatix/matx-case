@@ -95,7 +95,7 @@ module walls(dimensions, thickness = 6) {
 	render() difference() {
 		color([0.2, 0.2, 0.2, 0.7]) {
 			render() difference() {
-				translate([0, 0, 6]) rcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]-12], d=20);
+				rcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
 				zcube(dimensions);
 			}
 			
@@ -117,7 +117,7 @@ module walls(dimensions, thickness = 6) {
 }
 
 module front_fan(dimensions) {
-	translate([-70-2.25, -dimensions[1]/2, 140/2+10]) rotate([90, 0, 0]) children();
+	translate([-70-2.25, -dimensions[1]/2, dimensions[2]/2]) rotate([90, 0, 0]) children();
 }
 
 module top_radiator(dimensions) {
@@ -125,21 +125,34 @@ module top_radiator(dimensions) {
 }
 
 module back_power_supply(dimensions) {
-	translate([10, dimensions[1]/2, dimensions[2]-6-4]) rotate([0, 0, 180]) children();
+	translate([10, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
 }
 
 module bottom_tray(dimensions, offset = 12) {
-	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), 6+offset]) children();
+	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), offset]) children();
+}
+
+module base(dimensions) {
+	translate([89, 0, 0]) zcube([10, dimensions[1], 4]);
+	
+	//translate([-68, 0, 0]) zcube([10, dimensions[1], 4]);
+	
+	translate([0, -13.5, 0]) zcube([dimensions[0], 10, 4]);
+	translate([0, 142, 0]) zcube([dimensions[0], 10, 4]);
+	translate([0, -85.5, 0]) zcube([dimensions[0], 10, 4]);
+	
+	bottom_tray(dimensions, 0) {
+		render() difference() {
+			standoffs() color("yellow") cylinder(d=6, h=12, $fn=12);
+			standoffs() color("yellow") translate([0, 0, 12-6]) hole(3, 6);
+		}
+	}
 }
 
 module case(dimensions = internal_size, board_offset = 12) {
 	// TODO fix these arbitrary numbers:
 	bottom_tray(dimensions, board_offset) {
 		motherboard();
-	}
-	
-	bottom_tray(dimensions, 0) {
-		standoffs() color("yellow") cylinder(d=4, h=12, $fn=12);
 	}
 
 	top_radiator(dimensions) h115i();
@@ -150,11 +163,12 @@ module case(dimensions = internal_size, board_offset = 12) {
 
 	// bottom and top of case
 	color([0.8, 0.8, 1.0, 0.2]) {
-		rcube([340, 340, 6], d=40);
-		//translate([0, 0, dimensions[2] - 6]) rcube([340, 340, 6], d=40);
+		//translate([0, 0, -6]) rcube([340, 340, 6], d=40);
+		//translate([0, 0, dimensions[2]]) rcube([340, 340, 6], d=40);
 	}
 
 	walls(dimensions);
+	base(dimensions);
 }
 
 module corner_mask(dimensions, outset = 10, thickness = 6) {
@@ -190,8 +204,8 @@ module join_mask(dimensions, thickness = 6, width = 1) {
 	}
 }
 
-internal_size = [308, 308, 160];
-intersection() {
+internal_size = [308, 308, 160-12];
+/*intersection() {
 	difference() {
 		walls(internal_size);
 		color("purple") zcorners() corner_mask(internal_size);
@@ -199,4 +213,6 @@ intersection() {
 	
 	color("red") join_mask(internal_size);
 }
+*/
 
+case(internal_size);
