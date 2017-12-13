@@ -16,3 +16,10 @@ module rcube(dimensions, d, z=0, f=1) {
 		translate([dx, dy, dz]) cylinder(h=dimensions[2], d=d);
 	}
 }
+
+module zcorners() {
+	children();
+	mirror([1, 0, 0]) children();
+	mirror([0, 1, 0]) children();
+	mirror([1, 1, 0]) children();
+}

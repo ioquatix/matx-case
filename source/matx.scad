@@ -1,23 +1,18 @@
 
+$tolerance = 0.1;
+
+use <bolts.scad>;
 use <zcube.scad>;
+
+use <h115i.scad>;
+use <sx500g.scad>;
+
+use <fan.scad>;
 
 function inch(x) = x * 25.4;
 
 module pci_card() {
 	translate([1.6/2, 19.8, 7.6+4]) rotate(-90, [0, 0, 1]) rotate(90, [1, 0, 0]) color("brown") import("gtx.stl", convexity=4);
-}
-
-module power_supply() {
-	// http://silverstonetek.com/goods_cable_define/sx500-g-cable-define.pdf
-	zcube([125, 100, 63]);
-}
-
-module radiator() {
-	// Corsair H115i
-	// Radiator dimensions: 140mm x 312mm x 26mm
-	// Fan dimensions: 140mm x 25mm
-	//scale([1, -1, 1]) cube([26+25, 312, 140]);
-	color("blue") scale([1, -1, 1]) cube([30+25, 276, 125]);
 }
 
 module standoffs() {
@@ -49,13 +44,15 @@ module pci_connectors(inset = inch(-0.6), factor = 0.5) {
 
 module motherboard(thickness=1.6) {
 	difference() {
-		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
+		color("green") translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
 		standoffs() color("white") cylinder(d=4, h=10, $fn=12);
 	}
 	
-	
 	//translate([6.64, -46.94, 0]) pci_card();
 	translate([47.28, -46.94, 0]) pci_card();
+	
+	// A very rough approximation of where the CPU is likely to be.
+	translate([inch(5), inch(-4.5), thickness]) color("silver") zcube([inch(3), inch(2.5), inch(1.5)]);
 	
 	color("grey") {
 		pci_connectors() translate([0, 0, thickness]) scale([1.0, -1.0, 1.0]) cube([inch(0.4), inch(5), inch(0.4)]);
@@ -63,7 +60,8 @@ module motherboard(thickness=1.6) {
 }
 
 module rear_io_cutout() {
-	translate([inch(2.096), inch(0.483), inch(-0.088)]) cube([inch(6.25), 20, inch(1.75)]);
+	translate([inch(2.096), inch(0.483)-$tolerance, inch(-0.088)]) cube([inch(6.25), 20, inch(1.75)]);
+	translate([inch(2.096-0.1), inch(0.483+0.05)-$tolerance, inch(-0.088-0.1)]) cube([inch(6.25+0.2), 20, inch(1.75+0.2)]);
 }
 
 module rear_powersupply() {
@@ -72,54 +70,82 @@ module rear_powersupply() {
 	}
 }
 
-module top_radiator() {
-	translate([inch(8.5), inch(0.483), 0]) {
-		radiator();
-	}
-}
-
 module rear_pci_cutout(width = 14) {
 	pci_connectors(inch(0.483), 0.5) {
-		translate([-width/2, 0, 0]) cube([width, 20, 100]);
+		translate([-width/2, 0-$tolerance, 0]) cube([width, 20, 100]);
+		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 1]);
+		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 50]);
+		
+		// TODO Just eyeballed this.
+		translate([9.215, 4.95, 108.8-6]) #hole(4, 6);
+		
+		// TODO Just eyeballed this.
+		translate([2.7, 8.95, 107]) zcube([8, 4, 6]);
 	}
 }
 
-module tray(offset = 12) {
-	translate([0, 0, offset]) {
-		motherboard();
-		
-		color("purple") {
-			// You need a small amount of clearance around this (0.1in)
-			rear_io_cutout();
-			
-			rear_pci_cutout();
+internal_size = [308, 308, 160];
+
+module walls(dimensions = internal_size, thickness = 6) {
+	render() difference() {
+		color([0.2, 0.2, 0.2, 0.7]) {
+			render() difference() {
+				translate([0, 0, 6]) rcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]-12], d=20);
+				zcube(dimensions);
+			}
 		}
 		
-		rear_powersupply();
+		front_fan(dimensions) fan_cutout();
+		top_radiator(dimensions) h115i_cutout();
+		back_power_supply(dimensions) sx500g_cutout();
+		
+		bottom_tray(dimensions, 12) {
+			// You need a small amount of clearance around this (0.1in)
+			rear_io_cutout();
+			rear_pci_cutout();
+		}
+	}
+}
+
+module front_fan(dimensions) {
+	translate([-80, -dimensions[1]/2, 140/2+10]) rotate([90, 0, 0]) children();
+}
+
+module top_radiator(dimensions) {
+	translate([dimensions[0]/2, 0, dimensions[2]/2]) children();
+}
+
+module back_power_supply(dimensions) {
+	translate([10, dimensions[1]/2, dimensions[2]-6]) rotate([0, 0, 180]) children();
+}
+
+module bottom_tray(dimensions, offset = 12) {
+	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), 6+offset]) children();
+}
+
+module case(dimensions = internal_size, board_offset = 12) {
+	// TODO fix these arbitrary numbers:
+	bottom_tray(dimensions, board_offset) {
+		motherboard();
 	}
 	
-	standoffs() color("yellow") cylinder(d=4, h=offset, $fn=12);
-}
-
-// TODO fix these arbitrary numbers:
-translate([inch(-4.8)+7, 137.732, 6]) {
-	tray();
-	top_radiator();
-}
-
-color([0.8, 0.8, 1.0, 0.2]) {
-// color("blue") translate([15, -135, 10]) zcube([140, 30, 140]);
-color("blue") translate([-90, -140, 20]) zcube([120, 25, 120]);
-color("blue") translate([-90 + 4 + 120, -140, 20]) zcube([120, 25, 120]);
-
-	rcube([340, 340, 6], d=40);
-	translate([0, 0, 154]) rcube([340, 340, 6], d=40);
-}
-
-color([0.6, 0.8, 1.0, 0.3]) {
-	render() difference() {
-		translate([0, 0, 6]) zcube([320, 320, 160-12]);
-		zcube([300, 300, 160]);
+	bottom_tray(dimensions, 0) {
+		standoffs() color("yellow") cylinder(d=4, h=12, $fn=12);
 	}
-	
+
+	top_radiator(dimensions) h115i();
+	back_power_supply(dimensions) sx500g();
+
+	// front fan:
+	front_fan(dimensions) fan();
+
+	// bottom and top of case
+	color([0.8, 0.8, 1.0, 0.2]) {
+		rcube([340, 340, 6], d=40);
+	//	translate([0, 0, 154]) rcube([340, 340, 6], d=40);
+	}
+
+	walls();
 }
+
+case();
