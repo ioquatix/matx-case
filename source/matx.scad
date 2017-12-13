@@ -63,7 +63,7 @@ module motherboard(thickness=1.6) {
 }
 
 module rear_io_cutout() {
-	translate([inch(2.096), inch(0.483), inch(-0.088)]) cube([inch(6.25), 2, inch(1.75)]);
+	translate([inch(2.096), inch(0.483), inch(-0.088)]) cube([inch(6.25), 20, inch(1.75)]);
 }
 
 module rear_powersupply() {
@@ -80,7 +80,7 @@ module top_radiator() {
 
 module rear_pci_cutout(width = 14) {
 	pci_connectors(inch(0.483), 0.5) {
-		translate([-width/2, 0, 0]) cube([width, 2, 100]);
+		translate([-width/2, 0, 0]) cube([width, 20, 100]);
 	}
 }
 
