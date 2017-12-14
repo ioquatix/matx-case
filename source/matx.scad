@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 4*3;
+$fn = 4*10;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -11,6 +11,8 @@ use <sx500g.scad>;
 use <fan.scad>;
 
 function inch(x) = x * 25.4;
+
+internal_size = [308, 308, 140+5];
 
 module pci_card() {
 	translate([1.6/2, 19.8, 7.6+4]) rotate(-90, [0, 0, 1]) rotate(90, [1, 0, 0]) color("brown") import("gtx.stl", convexity=4);
@@ -78,7 +80,7 @@ module rear_pci_cutout(width = 14) {
 		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 50]);
 		
 		// TODO Just eyeballed this.
-		translate([9.215, 4.95, 108.8-5]) #hole(3, 5);
+		translate([9.215, 4.95, 108.8-5]) hole(3, 5);
 		
 		// TODO Just eyeballed this.
 		translate([2.7, 8.95, 107]) zcube([8, 4, 6]);
@@ -95,11 +97,11 @@ module walls(dimensions, thickness = 6) {
 	render() difference() {
 		color([0.2, 0.2, 0.2, 0.7]) {
 			render() difference() {
-				rcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
+				zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
 				zcube(dimensions);
 			}
 			
-			bottom_tray(dimensions, 12) {
+			bottom_tray(dimensions) {
 				rear_pci_bracket();
 			}
 		}
@@ -108,11 +110,14 @@ module walls(dimensions, thickness = 6) {
 		top_radiator(dimensions) h115i_cutout();
 		back_power_supply(dimensions) sx500g_cutout();
 		
-		bottom_tray(dimensions, 12) {
+		bottom_tray(dimensions) {
 			// You need a small amount of clearance around this (0.1in)
 			rear_io_cutout();
 			rear_pci_cutout();
 		}
+		
+		zcorner() corner(dimensions);
+		zcorner() corner_cutout(dimensions);
 	}
 }
 
@@ -128,18 +133,15 @@ module back_power_supply(dimensions) {
 	translate([10, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
 }
 
-module bottom_tray(dimensions, offset = 12) {
+module bottom_tray(dimensions, offset = 18) {
 	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), offset]) children();
 }
 
 module base(dimensions) {
-	translate([89, 0, 0]) zcube([10, dimensions[1], 4]);
-	
-	//translate([-68, 0, 0]) zcube([10, dimensions[1], 4]);
-	
-	translate([0, -13.5, 0]) zcube([dimensions[0], 10, 4]);
-	translate([0, 142, 0]) zcube([dimensions[0], 10, 4]);
-	translate([0, -85.5, 0]) zcube([dimensions[0], 10, 4]);
+	render() difference() {
+		cylinder(d=150, h=4);
+		cylinder(d=100, h=4);
+	}
 	
 	bottom_tray(dimensions, 0) {
 		render() difference() {
@@ -149,26 +151,17 @@ module base(dimensions) {
 	}
 }
 
-module case(dimensions = internal_size, board_offset = 12) {
-	// TODO fix these arbitrary numbers:
+module case(dimensions = internal_size, board_offset = 18) {
 	bottom_tray(dimensions, board_offset) {
 		motherboard();
 	}
 
-	top_radiator(dimensions) h115i();
-	back_power_supply(dimensions) sx500g();
+	//top_radiator(dimensions) h115i();
+	//back_power_supply(dimensions) sx500g();
+	//front_fan(dimensions) fan();
 
-	// front fan:
-	front_fan(dimensions) fan();
-
-	// bottom and top of case
-	color([0.8, 0.8, 1.0, 0.2]) {
-		//translate([0, 0, -6]) rcube([340, 340, 6], d=40);
-		//translate([0, 0, dimensions[2]]) rcube([340, 340, 6], d=40);
-	}
-
-	walls(dimensions);
-	base(dimensions);
+	color("white") walls(dimensions);
+	color("red") base(dimensions);
 }
 
 module corner_mask(dimensions, outset = 10, thickness = 6) {
@@ -204,15 +197,69 @@ module join_mask(dimensions, thickness = 6, width = 1) {
 	}
 }
 
-internal_size = [308, 308, 160-12];
-/*intersection() {
-	difference() {
-		walls(internal_size);
-		color("purple") zcorners() corner_mask(internal_size);
+module corner(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, vertical_inset = 16, wall_inset = 2) {
+	sx = dimensions[0]+(thickness*2+offset*2);
+	sy = dimensions[1]+(thickness*2+offset*2);
+	
+	render() difference() {
+		intersection() {
+			rcube([sx, sy, dimensions[2]], d=offset*2);
+			cube([sx/2, sy/2, dimensions[2]]);
+		}
+		
+		zcube([dimensions]);
+		
+		zcube([sx, dimensions[1]-inset*2, dimensions[2]]);
+		zcube([dimensions[0]-inset*2, sy, dimensions[2]]);
+		
+		translate([0, 0, vertical_inset]) zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]-vertical_inset*2]);
+		
+		difference() {
+			zcube([dimensions[0] + thickness*2, dimensions[1] + thickness*2, dimensions[2]]);
+			zcube(dimensions);
+			
+			translate([dimensions[0]/2+wall_inset, dimensions[1]/2+wall_inset, 0]) zcube([offset*2, offset*2, dimensions[2]]);
+		}
+	}
+}
+
+module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, vertical_inset = 16, panel_thickness = 6) {
+	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
+		hole_length = vertical_inset-4 + panel_thickness;
+		
+		// Requires knurled insert M6x12x8
+		translate([thickness, thickness, hole_length-panel_thickness]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, hole_length, insert=vertical_inset-4);
+		translate([thickness, thickness, dimensions[2]-hole_length+panel_thickness]) rotate([0, 0, 45+90]) knurled_hole(6, hole_length, insert=vertical_inset-4);
+		
+		bolt_length = thickness+offset-2;
+		
+		vertical_offset = dimensions[2] - vertical_inset*6;
+		
+		for (i = [-1:1:1]) {
+			// Requires knurled insert M4x8x6mm, flat M4x14mm scews.
+			translate([bolt_length, -offset/2, dimensions[2]/2 - vertical_offset*i]) rotate([0, -90, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
+			translate([-offset/2, bolt_length, dimensions[2]/2 - vertical_offset*i]) rotate([90, 0, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
+		}
 	}
 	
-	color("red") join_mask(internal_size);
-}
-*/
+	zcube([dimensions[0], dimensions[1], 4]);
+	translate([0, 0, dimensions[2]-4]) zcube([dimensions[0], dimensions[1], 4]);
 
-case(internal_size);
+	translate([dimensions[0]/2 - inset/2, dimensions[1]/2-inset/2, 0]) {
+		// Requires knurled insert M3x12x5
+		knurled_insert(3, dimensions[2]);
+	}
+}
+
+module panels(dimensions, thickness = 6, offset = 10) {
+	sx = dimensions[0]+(thickness*2+offset*2);
+	sy = dimensions[1]+(thickness*2+offset*2);
+	
+	render() difference() {
+		// bottom and top of case
+		//translate([0, 0, -thickness]) rcube([sx, sy, thickness], d=offset*2);
+		translate([0, 0, dimensions[2]]) rcube([sx, sy, thickness], d=offset*2);
+		
+		corner_cutout(dimensions);
+	}
+}

@@ -25,10 +25,11 @@ module sx500g_holes(inset = 6, width = 125, height = 63) {
 module sx500g_cutout(thickness = 10, inset = 10) {
 	render() difference() {
 		color("grey") translate([0, 0.1, -63/2]) rotate([90, 0, 0]) zcube([125-inset, 63-inset, thickness+0.2]);
+
 		sx500g_holes() rotate([90, 0, 0]) cylinder(d=10, h=thickness+0.1);
-		
-		#sx500g_holes() translate([0, 30-thickness, 0]) rotate([90, 0, 0]) hole(3, 30);
 	}
+	
+	sx500g_holes() translate([0, 30-thickness, 0]) rotate([90, 0, 0]) hole(3, 30);
 }
 
 sx500g();

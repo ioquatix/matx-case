@@ -10,7 +10,7 @@ module h115i(diameter = 140, spacing = 124.5, offset = 20) {
 	// Corsair H115i
 	// Radiator dimensions: 140mm x 312mm x 26mm
 	// Fan dimensions: 140mm x 25mm
-	difference() {
+	render() difference() {
 		union() {
 			color([0.1, 0.1, 0.1]) translate([-(26+25), -312/2, -140/2]) cube([26, 312, 140]);
 			
