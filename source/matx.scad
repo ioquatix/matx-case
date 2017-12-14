@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 4*10;
+$fn = 4*4;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -96,7 +96,7 @@ module rear_pci_bracket(width = 14) {
 module walls(dimensions, thickness = 6) {
 	render() difference() {
 		color([0.2, 0.2, 0.2, 0.7]) {
-			render() difference() {
+			difference() {
 				zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
 				zcube(dimensions);
 			}
@@ -116,8 +116,8 @@ module walls(dimensions, thickness = 6) {
 			rear_pci_cutout();
 		}
 		
-		zcorner() corner(dimensions);
-		zcorner() corner_cutout(dimensions);
+		zcorners() corner(dimensions);
+		zcorners() corner_cutout(dimensions);
 	}
 }
 
@@ -156,7 +156,7 @@ module case(dimensions = internal_size, board_offset = 18) {
 		motherboard();
 	}
 
-	//top_radiator(dimensions) h115i();
+	top_radiator(dimensions) h115i();
 	//back_power_supply(dimensions) sx500g();
 	//front_fan(dimensions) fan();
 
@@ -235,20 +235,20 @@ module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, ins
 		
 		vertical_offset = dimensions[2] - vertical_inset*6;
 		
-		for (i = [-1:1:1]) {
+		for (i = [-1:2/3:1]) {
 			// Requires knurled insert M4x8x6mm, flat M4x14mm scews.
 			translate([bolt_length, -offset/2, dimensions[2]/2 - vertical_offset*i]) rotate([0, -90, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
 			translate([-offset/2, bolt_length, dimensions[2]/2 - vertical_offset*i]) rotate([90, 0, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
 		}
 	}
 	
-	zcube([dimensions[0], dimensions[1], 4]);
+	/*zcube([dimensions[0], dimensions[1], 4]);
 	translate([0, 0, dimensions[2]-4]) zcube([dimensions[0], dimensions[1], 4]);
 
 	translate([dimensions[0]/2 - inset/2, dimensions[1]/2-inset/2, 0]) {
 		// Requires knurled insert M3x12x5
 		knurled_insert(3, dimensions[2]);
-	}
+	}*/
 }
 
 module panels(dimensions, thickness = 6, offset = 10) {
@@ -262,4 +262,11 @@ module panels(dimensions, thickness = 6, offset = 10) {
 		
 		corner_cutout(dimensions);
 	}
+}
+
+case();
+
+render() difference() {
+	zcorners() render() corner();
+	zcorners() render() corner_cutout();
 }
