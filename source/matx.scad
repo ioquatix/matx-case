@@ -94,7 +94,7 @@ module rear_pci_bracket(width = 14) {
 }
 
 module walls(dimensions, thickness = 6) {
-	render() difference() {
+	difference() {
 		color([0.2, 0.2, 0.2, 0.7]) {
 			difference() {
 				zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
@@ -137,20 +137,6 @@ module bottom_tray(dimensions, offset = 18) {
 	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), offset]) children();
 }
 
-module base(dimensions) {
-	render() difference() {
-		cylinder(d=150, h=4);
-		cylinder(d=100, h=4);
-	}
-	
-	bottom_tray(dimensions, 0) {
-		render() difference() {
-			standoffs() color("yellow") cylinder(d=6, h=12, $fn=12);
-			standoffs() color("yellow") translate([0, 0, 12-6]) hole(3, 6);
-		}
-	}
-}
-
 module case(dimensions = internal_size, board_offset = 18) {
 	bottom_tray(dimensions, board_offset) {
 		motherboard();
@@ -163,9 +149,9 @@ module case(dimensions = internal_size, board_offset = 18) {
 	color("white") walls(dimensions);
 	color("red") base(dimensions);
 	
-	render() difference() {
-		zcorners() render() corner();
-		zcorners() render() corner_cutout();
+	difference() {
+		zcorners() corner();
+		zcorners() corner_cutout();
 	}
 }
 
@@ -234,23 +220,35 @@ module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, ins
 		
 		for (dz = [vertical_inset:vertical_offset:dimensions[2]]) {
 			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
-			#translate([bolt_length, -offset/2, dz]) rotate([0, -90, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
-			#translate([-offset/2, bolt_length, dz]) rotate([90, 0, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
+			translate([bolt_length, -offset/2, dz]) rotate([0, -90, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
+			translate([-offset/2, bolt_length, dz]) rotate([90, 0, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
 		}
 	}
 }
 
-module panels(dimensions, thickness = 6, offset = 10) {
+module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
+	sx = dimensions[0]+(thickness*2+offset*2);
+	sy = dimensions[1]+(thickness*2+offset*2);
+	
+	translate([0, 0, dimensions[2]]) rcube([sx, sy, thickness], d=offset*2);
+}
+
+module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10) {
 	sx = dimensions[0]+(thickness*2+offset*2);
 	sy = dimensions[1]+(thickness*2+offset*2);
 	
 	render() difference() {
-		// bottom and top of case
-		//translate([0, 0, -thickness]) rcube([sx, sy, thickness], d=offset*2);
-		translate([0, 0, dimensions[2]]) rcube([sx, sy, thickness], d=offset*2);
+		union() {
+			translate([0, 0, -thickness]) rcube([sx, sy, thickness], d=offset*2);
+		}
 		
-		corner_cutout(dimensions);
+		zcorners() corner_cutout(dimensions);
+	}
+	
+	bottom_tray(dimensions, 0) {
+		render() difference() {
+			standoffs() color("yellow") cylinder(d1=12, d2=8, h=6, $fn=12);
+			standoffs() color("yellow") knurled_hole(3, 12, insert=6);
+		}
 	}
 }
-
-case();
