@@ -162,6 +162,11 @@ module case(dimensions = internal_size, board_offset = 18) {
 
 	color("white") walls(dimensions);
 	color("red") base(dimensions);
+	
+	render() difference() {
+		zcorners() render() corner();
+		zcorners() render() corner_cutout();
+	}
 }
 
 module corner_mask(dimensions, outset = 10, thickness = 6) {
@@ -197,7 +202,7 @@ module join_mask(dimensions, thickness = 6, width = 1) {
 	}
 }
 
-module corner(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, vertical_inset = 16, wall_inset = 2) {
+module corner(dimensions = internal_size, thickness = 6, offset = 10, inset = 10) {
 	sx = dimensions[0]+(thickness*2+offset*2);
 	sy = dimensions[1]+(thickness*2+offset*2);
 	
@@ -207,48 +212,32 @@ module corner(dimensions = internal_size, thickness = 6, offset = 10, inset = 10
 			cube([sx/2, sy/2, dimensions[2]]);
 		}
 		
-		zcube([dimensions]);
+		zcube([dimensions[0]+thickness*2, dimensions[1], dimensions[2]]);
+		zcube([dimensions[0], dimensions[1]+thickness*2, dimensions[2]]);
 		
 		zcube([sx, dimensions[1]-inset*2, dimensions[2]]);
 		zcube([dimensions[0]-inset*2, sy, dimensions[2]]);
-		
-		translate([0, 0, vertical_inset]) zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]-vertical_inset*2]);
-		
-		difference() {
-			zcube([dimensions[0] + thickness*2, dimensions[1] + thickness*2, dimensions[2]]);
-			zcube(dimensions);
-			
-			translate([dimensions[0]/2+wall_inset, dimensions[1]/2+wall_inset, 0]) zcube([offset*2, offset*2, dimensions[2]]);
-		}
 	}
 }
 
-module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, vertical_inset = 16, panel_thickness = 6) {
+module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, panel_thickness = 6, panel_bolt_insert = 12) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
-		hole_length = vertical_inset-4 + panel_thickness;
-		
 		// Requires knurled insert M6x12x8
-		translate([thickness, thickness, hole_length-panel_thickness]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, hole_length, insert=vertical_inset-4);
-		translate([thickness, thickness, dimensions[2]-hole_length+panel_thickness]) rotate([0, 0, 45+90]) knurled_hole(6, hole_length, insert=vertical_inset-4);
+		translate([thickness, thickness, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
+		translate([thickness, thickness, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
 		
 		bolt_length = thickness+offset-2;
 		
-		vertical_offset = dimensions[2] - vertical_inset*6;
+		bolt_size = 3;
+		vertical_inset = bolt_size + 1;
+		vertical_offset = (dimensions[2]-vertical_inset*2) / 3;
 		
-		for (i = [-1:2/3:1]) {
-			// Requires knurled insert M4x8x6mm, flat M4x14mm scews.
-			translate([bolt_length, -offset/2, dimensions[2]/2 - vertical_offset*i]) rotate([0, -90, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
-			translate([-offset/2, bolt_length, dimensions[2]/2 - vertical_offset*i]) rotate([90, 0, 0]) countersunk_knurled_hole(4, bolt_length, insert=offset-2);
+		for (dz = [vertical_inset:vertical_offset:dimensions[2]]) {
+			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
+			#translate([bolt_length, -offset/2, dz]) rotate([0, -90, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
+			#translate([-offset/2, bolt_length, dz]) rotate([90, 0, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
 		}
 	}
-	
-	/*zcube([dimensions[0], dimensions[1], 4]);
-	translate([0, 0, dimensions[2]-4]) zcube([dimensions[0], dimensions[1], 4]);
-
-	translate([dimensions[0]/2 - inset/2, dimensions[1]/2-inset/2, 0]) {
-		// Requires knurled insert M3x12x5
-		knurled_insert(3, dimensions[2]);
-	}*/
 }
 
 module panels(dimensions, thickness = 6, offset = 10) {
@@ -265,8 +254,3 @@ module panels(dimensions, thickness = 6, offset = 10) {
 }
 
 case();
-
-render() difference() {
-	zcorners() render() corner();
-	zcorners() render() corner_cutout();
-}

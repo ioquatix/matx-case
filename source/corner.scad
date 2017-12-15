@@ -1,5 +1,5 @@
 
-include <matx.scad>;
+use <matx.scad>;
 
 render() difference() {
 	corner();
