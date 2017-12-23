@@ -93,7 +93,7 @@ module rear_pci_bracket(width = 14) {
 	}
 }
 
-module walls(dimensions, thickness = 6) {
+module walls(dimensions = internal_size, thickness = 6) {
 	render() difference() {
 		union() {
 			difference() {
@@ -232,34 +232,33 @@ module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
 	translate([0, 0, dimensions[2]]) rcube([sx, sy, thickness], d=offset*2);
 }
 
-module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10) {
+module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inset = 2) {
 	sx = dimensions[0]+(thickness*2+offset*2);
 	sy = dimensions[1]+(thickness*2+offset*2);
 	
 	render() difference() {
 		translate([0, 0, -thickness]) rcube([sx, sy, thickness], d=offset*2);
 		
-		render() for (dx = [-150:20:150]) {
-			for (dy = [-150:20:150]) {
-				color("green") translate([dx, dy, -4]) render() knurled_hole(3, 4, insert=4);
-			}
-		}
-		
-		// To assist with printing, we put ridges into the mesh (avoids warping/bending)
-		render() for (dr = [20:20:150]) {
-			translate([0, 0, -1]) difference() {
-				rcube([dr*2+1, dr*2+1, 1], 20);
-				rcube([dr*2-1, dr*2-1, 1], 20);
-			}
-		}
+		translate([0, 0, -thickness+inset]) zcube([dimensions[0], dimensions[0], thickness]);
 		
 		zcorners() corner_cutout(dimensions);
 	}
 	
-	/*bottom_tray(dimensions, 0) {
+	for (dx = [-140:40:150]) {
+		for (dy = [-140:40:150]) {
+			translate([dx, dy, -4]) difference() {
+				cylinder(d1=12, d2=8, h=4, $fn=12);
+				color("green") knurled_hole(3, 4, insert=4);
+			}
+		}
+	}
+	
+	bottom_tray(dimensions, 0) {
 		render() difference() {
 			standoffs() color("yellow") cylinder(d1=12, d2=8, h=6, $fn=12);
 			standoffs() color("yellow") knurled_hole(3, 12, insert=6);
 		}
-	}*/
+	}
 }
+
+case();

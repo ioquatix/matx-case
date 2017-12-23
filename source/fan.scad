@@ -24,10 +24,10 @@ module fan_cutout(diameter = 140, thickness = 6, wall = 3, spacing = 124.5) {
 			cylinder_outer(thickness-wall+0.1, diameter/5);
 		}
 		
-		fan_holes() translate([0, 0, -35]) hole(3, 35);
+		fan_holes(diameter, spacing) translate([0, 0, -35]) hole(3, 35);
 	}
 }
 
-color("brown") fan();
-#fan_holes() translate([0, 0, -35]) hole(3, 35);
-fan_cutout();
+//color("brown") fan();
+//#fan_holes() translate([0, 0, -35]) hole(3, 35);
+fan_cutout(80, spacing=80-10);
