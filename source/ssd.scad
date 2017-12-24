@@ -45,5 +45,37 @@ module ssd_cutout(dimensions = ssd_dimensions, depth=6) {
 	}
 }
 
-ssd();
+module ssd_standoff_corner() {
+	difference() {
+		cylinder_outer(6, 4);
+	}
+}
 
+module ssd_standoff(dimensions = ssd_dimensions, thickness = 6, width = 61.71, inset = [14, 90.6]) {
+	translate([0, -dimensions[1]/2, 0]) {
+		difference() {
+			union() {
+				ssd_holes_bottom() cylinder_outer(6, 4);
+				
+				hull() {
+					translate([-width/2, inset[0], -3]) cylinder_outer(3);
+					translate([width/2, inset[1], -3]) cylinder_outer(3);
+				}
+				
+				hull() {
+					translate([-width/2, inset[1], -3]) cylinder_outer(3);
+					translate([width/2, inset[0], -3]) cylinder_outer(3);
+				}
+			}
+			
+			ssd_holes_bottom() hole(3, 6);
+		}
+	}
+}
+
+module ssd_with_standoff(thickness=6) {
+	translate([0, 0, thickness]) {
+		ssd_standoff(thickness=thickness);
+		ssd();
+	}
+}
