@@ -295,6 +295,11 @@ module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inse
 	}
 }
 
-case();
-bottom_panel();
+//case();
+//bottom_panel();
 //top_panel();
+
+projection(cut = true)
+	rotate([0, 90, 0])
+	translate([internal_size[0]/2+3, 0, 0])
+	render() walls();
