@@ -6,17 +6,15 @@ use <bolts.scad>;
 use <zcube.scad>;
 
 use <h115i.scad>;
-use <sx500g.scad>;
-
+use <sfx.scad>;
+use <bay.scad>;
+use <ssd.scad>;
 use <fan.scad>;
+use <pci.scad>;
 
 function inch(x) = x * 25.4;
 
-internal_size = [308, 308, 140+5];
-
-module pci_card() {
-	translate([1.6/2, 19.8, 7.6+4]) rotate(-90, [0, 0, 1]) rotate(90, [1, 0, 0]) color("brown") import("gtx.stl", convexity=4);
-}
+internal_size = [320, 320, 160-12];
 
 module standoffs() {
 	// DATUM B as per the microATX specification is the origin.
@@ -37,34 +35,31 @@ module standoffs() {
 	}
 }
 
-module pci_connectors(inset = inch(-0.6), factor = 0.5, count = 4) {
-	// This is the position of pin 0 is given when factor is 0, otherwise when factor = 0.5 it's the midpoints.
-	translate([inch(-1.2), inset, 0]) {
-		for (x = [0:1:count-1])
-			translate([inch(0.8*(x+factor)), 0, 0]) children();
-	}
-}
-
 module motherboard(thickness=1.6) {
-	difference() {
-		color("green") translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
-		standoffs() color("white") cylinder(d=4, h=10, $fn=12);
+	color("green") render() difference() {
+		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
+		standoffs() cylinder(d=4, h=10, $fn=12);
 	}
-	
-	//translate([6.64, -46.94, 0]) pci_card();
-	translate([47.28, -46.94, 0]) pci_card();
 	
 	// A very rough approximation of where the CPU is likely to be.
 	translate([inch(5), inch(-4.5), thickness]) color("silver") zcube([inch(3), inch(2.5), inch(1.5)]);
 	
-	color("grey") {
-		pci_connectors() translate([0, 0, thickness]) scale([1.0, -1.0, 1.0]) cube([inch(0.4), inch(5), inch(0.4)]);
+	// Origin the surface of the PCB.
+	translate([0, 0, thickness]) {
+		color("brown") pci_express_datum(index = 3, count = 4) pci_card();
+		
+		color("grey") {
+			pci_express_connectors();
+		}
+		
+		rear_pci_bracket();
 	}
 }
 
 module rear_io_cutout() {
 	translate([inch(2.096), inch(0.483)-$tolerance, inch(-0.088)]) cube([inch(6.25), 20, inch(1.75)]);
-	translate([inch(2.096-0.1), inch(0.483+0.05)-$tolerance, inch(-0.088-0.1)]) cube([inch(6.25+0.2), 20, inch(1.75+0.2)]);
+	// This isn't strictly necessary and can't be easily laser cut :p
+	// #translate([inch(2.096-0.1), inch(0.483+0.05)-$tolerance, inch(-0.088-0.1)]) cube([inch(6.25+0.2), 20, inch(1.75+0.2)]);
 }
 
 module rear_powersupply() {
@@ -73,45 +68,56 @@ module rear_powersupply() {
 	}
 }
 
-module rear_pci_cutout(width = 14) {
-	pci_connectors(inch(0.483), 0.5) {
-		translate([-width/2, 0-$tolerance, 0]) cube([width, 20, 100]);
-		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 1]);
-		translate([-inch(0.3), 0-$tolerance, 108.8]) cube([inch(0.8)+$tolerance, 20, 50]);
+module rear_pci_cutout(width = 14, extension = inch(-0.088), outset = 20) {
+	pci_connectors(inch(0.483), factor = 0.5) {
+		// Main vertical cut-out:
+		translate([-width/2, 0-$tolerance, extension]) difference() {
+			cube([width, outset, 100+extension]);
+			
+			// This gives little corner cut-outs while allowing the bottom to be flush with the motherboard io cut-out which is not completely compliant with the PCI/ATX specification.
+			translate([width/2, 0-$tolerance, 0]) reflect() translate([width/4, 0, 0]) rotate([0, 45, 0]) cube([width, outset+$tolerance*2, width]);
+		}
 		
-		// TODO Just eyeballed this.
-		translate([9.215, 4.95, 108.8-5]) hole(3, 5);
-		
-		// TODO Just eyeballed this.
-		translate([2.7, 8.95, 107]) zcube([8, 4, 6]);
+		translate([-inch(0.3), 0-$tolerance, 108.8+1]) cube([inch(0.8)+$tolerance, outset, 18]);
 	}
 }
 
-module rear_pci_bracket(width = 14) {
-	pci_connectors(inch(0.483), 0.5) {
-		translate([inch(0.1), 6, 108.8-6]) rcube([inch(0.9), 10, 6], 6);
+module bottom_storage(dimensions) {
+	offset = dimensions[1]/4;
+	
+	for (y = [-offset:80:offset])
+		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 0, -90]) children();
+}
+
+module rear_pci_bracket(width = 12, outset = 12) {
+	/* hull() {
+		pci_connectors(inch(0.483), 0.5) {
+			translate([-inch(0.3), 0, 108.8+1]) cube([inch(0.8), outset, 18]);
+		}
+	} */
+	
+	color("blue") pci_express_datum(100.36+7.9) {
+		translate([2.84-1.6, 64.13, 0]) hole(3, 1, 2);
 	}
+	
+	// The notch that the PCI cards fit into:
+	// TODO Just eyeballed this.
 }
 
 module walls(dimensions = internal_size, thickness = 6) {
-	render() difference() {
-		union() {
-			difference() {
-				zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
-				zcube(dimensions);
-			}
-			
-			bottom_tray(dimensions) {
-				rear_pci_bracket();
-			}
+	color("white") render() difference() {
+		difference() {
+			zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
+			zcube([dimensions[0]-1, dimensions[1], dimensions[2]+2]);
 		}
 		
+		front_controls(dimensions) bay_cutout();
 		front_fan(dimensions) fan_cutout();
 		top_radiator(dimensions) h115i_cutout();
-		back_power_supply(dimensions) sx500g_cutout();
+		back_power_supply(dimensions) sfx_cutout();
+		bottom_storage(dimensions) ssd_cutout();
 		
 		bottom_tray(dimensions) {
-			// You need a small amount of clearance around this (0.1in)
 			rear_io_cutout();
 			rear_pci_cutout();
 		}
@@ -129,29 +135,34 @@ module top_radiator(dimensions) {
 	translate([dimensions[0]/2, 0, dimensions[2]/2]) children();
 }
 
-module back_power_supply(dimensions) {
-	translate([10, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
+module front_controls(dimensions) {
+	translate([dimensions[0]/4, -dimensions[1]/2, dimensions[2]/2]) rotate([0, 90, 0]) bay_offset() children();
 }
 
-module bottom_tray(dimensions, offset = 18) {
+module back_power_supply(dimensions) {
+	translate([20, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
+}
+
+module bottom_tray(dimensions, offset = 12) {
 	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), offset]) children();
 }
 
-module case(dimensions = internal_size, board_offset = 18) {
-	bottom_tray(dimensions, board_offset) {
+module case(dimensions = internal_size) {
+	bottom_tray(dimensions) {
 		motherboard();
 	}
 
-	top_radiator(dimensions) h115i();
-	back_power_supply(dimensions) sx500g();
-	front_fan(dimensions) fan();
+	//top_radiator(dimensions) h115i();
+	//back_power_supply(dimensions) sfx();
+	//front_fan(dimensions) fan();
+	//bottom_storage(dimensions) ssd();
 	
-	color("white") walls(dimensions);
+	walls(dimensions);
 	
-	difference() {
+	/* render() difference() {
 		zcorners() corner();
 		zcorners() corner_cutout();
-	}
+	} */
 }
 
 module corner_mask(dimensions, outset = 10, thickness = 6) {
@@ -214,7 +225,7 @@ module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, ins
 		bolt_length = thickness+offset-2;
 		
 		bolt_size = 3;
-		vertical_inset = bolt_size + 1;
+		vertical_inset = offset / 2;
 		vertical_offset = (dimensions[2]-vertical_inset*2) / 3;
 		
 		for (dz = [vertical_inset:vertical_offset:dimensions[2]]) {
@@ -225,40 +236,54 @@ module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, ins
 	}
 }
 
-module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
+module panel(dimensions = internal_size, thickness = 6, offset = 10) {
 	sx = dimensions[0]+(thickness*2+offset*2);
 	sy = dimensions[1]+(thickness*2+offset*2);
 	
-	translate([0, 0, dimensions[2]]) rcube([sx, sy, thickness], d=offset*2);
+	difference() {
+		intersection() {
+			rcube([sx, sy, thickness], d=offset*2);
+			
+			ix = dimensions[0]/2+thickness;
+			iy = dimensions[1]/2+thickness;
+			
+			zcorners() {
+				translate([ix, iy, thickness/2]) rotate([0, 0, 45]) cube([offset*6, offset*6, thickness], true);
+				
+				cube([ix, iy, thickness]);
+			}
+		}
+		
+		/* for (dx = [-140:40:150]) {
+			for (dy = [-140:40:150]) {
+				%translate([dx, dy, -4]) color("green") knurled_hole(3, 4, insert=4);
+			}
+		} */
+	}
 }
 
-module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inset = 2) {
-	sx = dimensions[0]+(thickness*2+offset*2);
-	sy = dimensions[1]+(thickness*2+offset*2);
-	
-	render() difference() {
-		translate([0, 0, -thickness]) rcube([sx, sy, thickness], d=offset*2);
-		
-		translate([0, 0, -thickness+inset]) zcube([dimensions[0], dimensions[0], thickness]);
+module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
+	difference() {
+		translate([0, 0, dimensions[2]]) panel(dimensions, thickness, offset);
 		
 		zcorners() corner_cutout(dimensions);
 	}
-	
-	for (dx = [-140:40:150]) {
-		for (dy = [-140:40:150]) {
-			translate([dx, dy, -4]) difference() {
-				cylinder(d1=12, d2=8, h=4, $fn=12);
-				color("green") knurled_hole(3, 4, insert=4);
+}
+
+module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inset = 2) {
+	difference() {
+		translate([0, 0, -thickness]) panel(dimensions, thickness, offset);
+		
+		zcorners() corner_cutout(dimensions);
+		
+		bottom_tray(dimensions, 0) {
+			difference() {
+				translate([0, 0, -6]) standoffs() color("yellow") hole(3, 6, 12);
 			}
-		}
-	}
-	
-	bottom_tray(dimensions, 0) {
-		render() difference() {
-			standoffs() color("yellow") cylinder(d1=12, d2=8, h=6, $fn=12);
-			standoffs() color("yellow") knurled_hole(3, 12, insert=6);
 		}
 	}
 }
 
 case();
+bottom_panel();
+top_panel();

@@ -23,3 +23,8 @@ module zcorners() {
 	mirror([0, 1, 0]) children();
 	mirror([1, 1, 0]) children();
 }
+
+module reflect(axis = [1, 0, 0]) {
+	children();
+	mirror(axis) children();
+}

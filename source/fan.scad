@@ -15,16 +15,17 @@ module fan_holes(diameter = 140, spacing = 124.5, z = 10) {
 	translate([outset, -outset, z]) children();
 }
 
-module fan_cutout(diameter = 140, thickness = 6, wall = 3, spacing = 124.5) {
+module fan_cutout(diameter = 140, thickness = 6, inset = 4, spacing = 124.5) {
 	render() {
-		translate([0, 0, -0.1]) cylinder_outer(thickness+0.2, diameter/2);
+		translate([0, 0, -0.1]) cylinder_outer(thickness+0.2, (diameter - inset)/2);
 		
-		translate([0, 0, wall]) zcorners() hull() {
+		/* translate([0, 0, wall]) zcorners() hull() {
 			translate([-spacing/2, -spacing/2, 0]) cylinder_outer(thickness-wall+0.1, (diameter-spacing)/2);
 			cylinder_outer(thickness-wall+0.1, diameter/5);
-		}
+		} */
 		
-		fan_holes(diameter, spacing) translate([0, 0, -35]) hole(3, 35);
+		// The screw is M3, but we make the hole M4 so it won't hold a thread.
+		fan_holes(diameter, spacing) translate([0, 0, -35]) hole(4, 35);
 	}
 }
 
