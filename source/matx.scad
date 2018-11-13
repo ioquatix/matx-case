@@ -46,7 +46,8 @@ module motherboard(thickness=1.6) {
 	
 	// Origin the surface of the PCB.
 	translate([0, 0, thickness]) {
-		color("brown") pci_express_datum(index = 3, count = 4) pci_card();
+		color("brown") translate([0, 0, 12*0]) pci_express_datum(index = 3, count = 4) pci_card();
+		//color("brown") pci_express_datum(index = 1, count = 2) pci_card();
 		
 		color("grey") {
 			pci_express_connectors();
@@ -78,7 +79,7 @@ module rear_pci_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 			translate([width/2, 0-$tolerance, 0]) reflect() translate([width/4, 0, 0]) rotate([0, 45, 0]) cube([width, outset+$tolerance*2, width]);
 		}
 		
-		translate([-inch(0.3), 0-$tolerance, 108.8+1]) cube([inch(0.8)+$tolerance, outset, 18]);
+		translate([-8, 0-$tolerance, 108.8+1]) cube([inch(0.8)+$tolerance, outset, 30]);
 	}
 }
 
@@ -90,18 +91,28 @@ module bottom_storage(dimensions) {
 }
 
 module rear_pci_bracket(width = 12, outset = 12) {
-	/* hull() {
-		pci_connectors(inch(0.483), 0.5) {
-			translate([-inch(0.3), 0, 108.8+1]) cube([inch(0.8), outset, 18]);
+	hull() {
+		pci_connectors(inch(0.483), factor = 0.5) {
+			translate([-8, 0, 108+1]) cube([inch(0.8), 6, inch(1)]);
 		}
-	} */
-	
-	color("blue") pci_express_datum(100.36+7.9) {
-		translate([2.84-1.6, 64.13, 0]) hole(3, 1, 2);
 	}
 	
-	// The notch that the PCI cards fit into:
-	// TODO Just eyeballed this.
+	hull() {
+		pci_connectors(inch(0.483), factor = 0.5) {
+			translate([-8-6, -6, 108+10]) cube([inch(0.8)+12, 6, inch(1)-9]);
+		}
+	}
+	
+	hull() {
+		pci_connectors(inch(0.483), factor = 0.5) {
+			translate([-8-6, 6, 108+1]) cube([inch(0.8)+12, 0.01, inch(1)]);
+			translate([-8, +6, 108+1]) cube([inch(0.8), 6, 0.01]);
+		}
+	}
+	
+	color("white") pci_express_datum(100.36+7.9) {
+		translate([2.84-1.57/2, 64.13, 0]) hole(4, 1, 0);
+	}
 }
 
 module walls(dimensions = internal_size, thickness = 6) {
@@ -152,17 +163,17 @@ module case(dimensions = internal_size) {
 		motherboard();
 	}
 
-	//top_radiator(dimensions) h115i();
-	//back_power_supply(dimensions) sfx();
-	//front_fan(dimensions) fan();
-	//bottom_storage(dimensions) ssd();
+	top_radiator(dimensions) h115i();
+	back_power_supply(dimensions) sfx();
+	front_fan(dimensions) fan();
+	bottom_storage(dimensions) ssd();
 	
 	walls(dimensions);
 	
-	/* render() difference() {
+	render() difference() {
 		zcorners() corner();
 		zcorners() corner_cutout();
-	} */
+	}
 }
 
 module corner_mask(dimensions, outset = 10, thickness = 6) {
@@ -286,4 +297,4 @@ module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inse
 
 case();
 bottom_panel();
-top_panel();
+//top_panel();
