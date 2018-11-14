@@ -1,5 +1,5 @@
 
-include <case.scad>;
+include <../source/case.scad>;
 
 module wall_projection(index = 0) {
 	projection(cut = true)
@@ -9,4 +9,5 @@ module wall_projection(index = 0) {
 		walls();
 }
 
-wall_projection(3);
+for (i = [0:3])
+	translate([(internal_size[2]+2)*i, 0]) wall_projection(i);
