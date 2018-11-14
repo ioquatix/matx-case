@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 4*4;
+$fn = 8*8;
 
 use <bolts.scad>;
 use <zcube.scad>;
