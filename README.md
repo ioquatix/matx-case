@@ -2,6 +2,8 @@
 
 This repository contains parts for constructing a small mATX compatible computer case. It contains both parts which need to be printed, and parts which need to be laser cut.
 
+![Case](photos/case-render.png)
+
 ## Motivation
 
 Ever since I was able to hold a drill, I wanted to make my own computer case. Now, 20 years later, thanks to innovation in 3D printing and laser cutting, it has become trivial to build your own computer case.
