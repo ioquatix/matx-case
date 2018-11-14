@@ -117,10 +117,7 @@ module rear_pci_bracket(width = 12, outset = 12) {
 
 module walls(dimensions = internal_size, thickness = 6) {
 	color("white") render() difference() {
-		difference() {
-			zcube([dimensions[0]+thickness*2, dimensions[1]+thickness*2, dimensions[2]], d=20);
-			zcube([dimensions[0]-1, dimensions[1], dimensions[2]+2]);
-		}
+		zsides(dimensions, thickness);
 		
 		front_controls(dimensions) bay_cutout();
 		front_fan(dimensions) fan_cutout();
@@ -133,7 +130,6 @@ module walls(dimensions = internal_size, thickness = 6) {
 			rear_pci_cutout();
 		}
 		
-		zcorners() corner(dimensions);
 		zcorners() corner_cutout(dimensions);
 	}
 }
@@ -294,12 +290,3 @@ module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inse
 		}
 	}
 }
-
-//case();
-//bottom_panel();
-//top_panel();
-
-projection(cut = true)
-	rotate([0, 90, 0])
-	translate([internal_size[0]/2+3, 0, 0])
-	render() walls();

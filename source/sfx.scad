@@ -31,7 +31,7 @@ module sfx_cutout(thickness = 10, inset = 12, dimensions = sfx_dimensions) {
 	difference() {
 		color("grey") translate([0, 0.1, -dimensions[2]/2]) rotate([90, 0, 0]) zcube([dimensions[0]-inset, dimensions[2]-inset, thickness+0.2]);
 
-		sfx_holes() rotate([90, 45, 0]) zcube([inset, inset, thickness]);
+		sfx_holes() rotate([90, 45, 0]) zcube([inset, inset, thickness*2], z=-thickness/2);
 	}
 	
 	// The screw is M3, but we make the hole M4 so it won't hold a thread.

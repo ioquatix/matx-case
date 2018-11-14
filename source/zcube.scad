@@ -28,3 +28,13 @@ module reflect(axis = [1, 0, 0]) {
 	children();
 	mirror(axis) children();
 }
+
+module zsides(dimensions, thickness) {
+	reflect([1, 0, 0]) {
+		translate([thickness/2+dimensions[0]/2, 0, dimensions[2]/2]) cube([thickness, dimensions[1], dimensions[2]], true);
+	}
+	
+	reflect([0, 1, 0]) {
+		translate([0, thickness/2+dimensions[1]/2, dimensions[2]/2]) cube([dimensions[0], thickness, dimensions[2]], true);
+	}
+}
