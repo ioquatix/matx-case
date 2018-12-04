@@ -3,7 +3,10 @@ use <bolts.scad>;
 
 use <fan.scad>;
 
-module h115i(diameter = 140, spacing = 124.5, offset = 20, radiator = [29, 315, 143]) {
+h115i_platinum = [27, 322, 137];
+h115i_pro = [29, 315, 143];
+
+module h115i(diameter = 140, spacing = 124.5, offset = 20, radiator = h115i_platinum) {
 	outset = (diameter - spacing) / 2;
 	dy = (offset / 2) - outset;
 	
