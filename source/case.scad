@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 8*8;
+$fn = 8*2;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -14,7 +14,8 @@ use <pci.scad>;
 
 function inch(x) = x * 25.4;
 
-internal_size = [320, 320, 160-12];
+// The case is 16mm larger from the internal size on each edge, so 320+16+16
+internal_size = [324, 324, 144];
 
 module standoffs() {
 	// DATUM B as per the microATX specification is the origin.
@@ -116,8 +117,8 @@ module rear_pci_bracket(width = 12, outset = 12) {
 }
 
 module walls(dimensions = internal_size, thickness = 6) {
-	color("white") render() difference() {
-		zsides(dimensions, thickness);
+	color("white") difference() {
+		zsides(dimensions, thickness, 6);
 		
 		front_controls(dimensions) bay_cutout();
 		front_fan(dimensions) fan_cutout();
@@ -151,7 +152,7 @@ module back_power_supply(dimensions) {
 }
 
 module bottom_tray(dimensions, offset = 12) {
-	translate([inch(-4.8)+8, dimensions[1]/2-inch(0.483), offset]) children();
+	translate([inch(-4.8)+12, dimensions[1]/2-inch(0.483), offset]) children();
 }
 
 module case(dimensions = internal_size) {
@@ -172,90 +173,65 @@ module case(dimensions = internal_size) {
 	}
 }
 
-module corner_mask(dimensions, outset = 10, thickness = 6) {
-	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
-		translate([-outset+thickness, -outset+thickness, 0]) cube([outset, outset, dimensions[2]]);
-
-		translate([thickness/2, -outset, 0]) cube([thickness/2, outset, dimensions[2]]);
-		translate([-outset, thickness/2, 0]) cube([outset, thickness/2, dimensions[2]]);
-	}
-}
-
-module join_edge(length, width = 1, height = 10, count = 11, zig = 0.2) {
-	step = (length / (count+0.5)) / 4;
-	offset = step * zig;
+module corner(dimensions = internal_size, thickness = 6) {
+	sx = dimensions[0]+thickness*2;
+	sy = dimensions[1]+thickness*2;
 	
-	for (i = [0:1:count]) {
-		translate([0, i*step*4, 0]) linear_extrude(height=height) polygon([
-			[-width, 0],
-			[-width, step+offset],
-			[width, step-offset],
-			[width, step*3+offset],
-			[-width, step*3-offset],
-			[-width, step*4],
-		]);
-	}
-}
-
-module join_mask(dimensions, thickness = 6, width = 1) {
-	translate([0, 0, thickness]) {
-		rotate([90, 0, 0]) join_edge(dimensions[2]-thickness*2, height=dimensions[1]/2+thickness+$tolerance, width=width);
-		
-		translate([-width, 0, 0]) rotate([0, 0, 180]) cube([dimensions[0]/2-width, dimensions[1]/2+thickness, dimensions[2]-thickness*2]);
-	}
-}
-
-module corner(dimensions = internal_size, thickness = 6, offset = 10, inset = 10) {
-	sx = dimensions[0]+(thickness*2+offset*2);
-	sy = dimensions[1]+(thickness*2+offset*2);
-	
-	render() difference() {
-		intersection() {
-			rcube([sx, sy, dimensions[2]], d=offset*2);
-			cube([sx/2, sy/2, dimensions[2]]);
+	intersection() {
+		union() {
+			difference() {
+				rcube([sx, sy, dimensions[2]], d=thickness*2);
+				
+				zcube([dimensions[0]+thickness*2, dimensions[1]-thickness*2, dimensions[2]]);
+				zcube([dimensions[0]-thickness*2, dimensions[1]+thickness*2, dimensions[2]]);
+			}
+			
+			difference() {
+				zcube(dimensions);
+				
+				zcube([dimensions[0], dimensions[1]-thickness*5, dimensions[2]]);
+				zcube([dimensions[0]-thickness*5, dimensions[1], dimensions[2]]);
+				zcube([dimensions[0]-thickness*2, dimensions[1]-thickness*2, dimensions[2]]);
+			}
 		}
 		
-		zcube([dimensions[0]+thickness*2, dimensions[1], dimensions[2]]);
-		zcube([dimensions[0], dimensions[1]+thickness*2, dimensions[2]]);
-		
-		zcube([sx, dimensions[1]-inset*2, dimensions[2]]);
-		zcube([dimensions[0]-inset*2, sy, dimensions[2]]);
+		cube(dimensions);
 	}
 }
 
-module corner_cutout(dimensions = internal_size, thickness = 6, offset = 10, inset = 10, panel_thickness = 6, panel_bolt_insert = 12) {
+module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 12) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
 		// Requires knurled insert M6x12x8
-		translate([thickness, thickness, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
-		translate([thickness, thickness, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
+		translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
+		translate([0, 0, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
 		
-		bolt_length = thickness+offset-2;
+		bolt_length = thickness*2;
 		
 		bolt_size = 3;
-		vertical_inset = offset / 2;
-		vertical_offset = (dimensions[2]-vertical_inset*2) / 3;
+		inset = (thickness*1.5)/2;
+		vertical_offset = (dimensions[2]-inset*2) / 3;
 		
-		for (dz = [vertical_inset:vertical_offset:dimensions[2]]) {
+		for (dz = [inset:vertical_offset:dimensions[2]]) {
 			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
-			translate([bolt_length, -offset/2, dz]) rotate([0, -90, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
-			translate([-offset/2, bolt_length, dz]) rotate([90, 0, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=offset-2);
+			#translate([-thickness, -thickness-inset, dz]) rotate([0, 90, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=thickness);
+			#translate([-thickness-inset, -thickness, dz]) rotate([-90, 0, 0]) countersunk_knurled_hole(bolt_size, bolt_length, insert=thickness);
 		}
 	}
 }
 
-module panel(dimensions = internal_size, thickness = 6, offset = 10) {
-	sx = dimensions[0]+(thickness*2+offset*2);
-	sy = dimensions[1]+(thickness*2+offset*2);
+module panel(dimensions = internal_size, thickness = 6) {
+	sx = dimensions[0]+(thickness*4);
+	sy = dimensions[1]+(thickness*4);
 	
 	difference() {
 		intersection() {
-			rcube([sx, sy, thickness], d=offset*2);
+			rcube([sx, sy, thickness], d=thickness*2);
 			
 			ix = dimensions[0]/2+thickness;
 			iy = dimensions[1]/2+thickness;
 			
 			zcorners() {
-				translate([ix, iy, thickness/2]) rotate([0, 0, 45]) cube([offset*6, offset*6, thickness], true);
+				translate([ix, iy, thickness/2]) rotate([0, 0, 45]) cube([thickness*12, thickness*12, thickness], true);
 				
 				cube([ix, iy, thickness]);
 			}
