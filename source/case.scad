@@ -88,8 +88,16 @@ module rear_pci_cutout(dimensions = internal_size, width = 14, extension = inch(
 		top = bottom + 14;
 		
 		pci_connectors(inch(0.483), factor = 0.5) {
-			translate([-11+3, 0, bottom]) cube([20.5, outset, top-bottom]);
+			translate([-inch(0.8/2)+pci_tab_offset(), 0, bottom]) cube([inch(0.8), outset, top-bottom]);
 		}
+		
+		pci_connectors(inch(0.483), factor = 0.5) {
+			translate([-inch(0.8/2)+pci_tab_offset(), 0, bottom-2]) cube([inch(0.8), outset, 2]);
+		}
+	}
+	
+	pci_connectors(inch(0.483), factor = 0, index = 1) {
+		translate([0, -6, -8]) rotate([-90, 0, 0]) knurled_hole(3, 12);
 	}
 }
 
@@ -100,23 +108,36 @@ module bottom_storage(dimensions) {
 		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 0, -90]) children();
 }
 
-module rear_pci_bracket(dimensions = internal_size, width = 14, extension = inch(-0.088), outset = 6) {
-	//top = dimensions[2] - bottom_tray_offset;
+module rear_pci_bracket(dimensions = internal_size, outset = 6) {
+	case_top = dimensions[2] - bottom_tray_offset;
 	bottom = inch(4.32);
 	top = bottom + 14;
-	gap = inch(4.356 - 4.32);
+	size = top - bottom;
 	
-	hull() {
-		pci_connectors(inch(0.483), factor = 0.5) {
-			translate([-11+3, 0, bottom+gap]) {
-				cube([20.5, outset, top-bottom-gap]);
-				cube([20.5, outset*2, outset]);
-			}
+	color("orange")
+	pci_connectors(inch(0.483), factor = 0.5) {
+		translate([pci_tab_offset(), outset, bottom-2]) {
+			rcube([inch(0.8), outset*2, 2], d=3);
+			translate([0, -outset/2, 0]) zcube([inch(0.8), outset, 2]);
 		}
 	}
 	
-	color("white") pci_express_datum(bottom) {
-		translate([2.84-1.57/2, 64.13, 0]) hole(4, gap, 0);
+	color("orange") pci_express_datum(bottom) {
+		translate([2.84-1.57/2, 64.13, 0]) hole(4, pci_tab_gap(), 0);
+	}
+}
+
+module rear_pci_slots(dimensions = internal_size, thickness = 6, gap = 1.0, height = 8) {
+	color("orange") difference() {
+		pci_connectors(inch(0.483), factor = 0.5) {
+			translate([0, -thickness/2, -bottom_tray_offset]) 
+			difference() {
+				zcube([pci_tab_width(), thickness, height]);
+				translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
+			}
+		}
+		
+		rear_pci_cutout(dimensions);
 	}
 }
 
@@ -162,6 +183,8 @@ module bottom_tray(dimensions, offset = bottom_tray_offset) {
 module case(dimensions = internal_size) {
 	bottom_tray(dimensions) {
 		motherboard();
+		
+		rear_pci_slots();
 	}
 
 	top_radiator(dimensions) h115i();
