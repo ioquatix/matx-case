@@ -16,7 +16,6 @@ function inch(x) = x * 25.4;
 
 // The case is 16mm larger from the internal size on each edge, so 320+16+16
 internal_size = [324, 324, 144];
-bottom_tray_offset = 12;
 
 module standoffs() {
 	// DATUM B as per the microATX specification is the origin.
@@ -37,32 +36,27 @@ module standoffs() {
 	}
 }
 
-module motherboard(thickness=1.6) {
-	color("green") render() difference() {
+module motherboard(thickness = pci_motherboard_thickness()) {
+	/* color("green") render() difference() {
 		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
 		standoffs() cylinder(d=4, h=10, $fn=12);
-	}
+	} */
 	
 	// A very rough approximation of where the CPU is likely to be.
 	translate([inch(5), inch(-4.5), thickness]) color("silver") zcube([inch(3), inch(2.5), inch(1.5)]);
 	
 	// Origin the surface of the PCB.
 	translate([0, 0, thickness]) {
-		color("brown") pci_express_datum(index = 3, count = 4) pci_card();
-		color("brown") pci_express_datum(index = 1, count = 2) pci_card();
+		color("brown") pci_express_datum(index = 2, count = 3) pci_card();
+		color("brown") pci_express_datum(index = 0, count = 1) pci_card();
 		
 		color("grey") {
 			pci_express_connectors();
 		}
 	}
 	
-	rear_pci_bracket();
-}
-
-module rear_io_cutout() {
-	translate([inch(2.096), inch(0.483)-$tolerance, inch(-0.088)]) cube([inch(6.25), 20, inch(1.75)]);
-	// This isn't strictly necessary and can't be easily laser cut :p
-	// #translate([inch(2.096-0.1), inch(0.483+0.05)-$tolerance, inch(-0.088-0.1)]) cube([inch(6.25+0.2), 20, inch(1.75+0.2)]);
+	pci_rear_bracket_top();
+	pci_rear_bracket_bottom();
 }
 
 module rear_powersupply() {
@@ -71,74 +65,11 @@ module rear_powersupply() {
 	}
 }
 
-module rear_pci_cutout(dimensions = internal_size, width = 14, extension = inch(-0.088), outset = 20) {
-	pci_connectors(inch(0.483), factor = 0.5) {
-		// Main vertical cut-out:
-		translate([-width/2, 0, extension]) difference() {
-			cube([width, outset, 100+extension]);
-			
-			// This gives little corner cut-outs while allowing the bottom to be flush with the motherboard io cut-out which is not completely compliant with the PCI/ATX specification.
-			translate([width/2, 0, 0]) reflect() translate([width/4, 0, 0]) rotate([0, 45, 0]) cube([width, outset, width]);
-		}
-	}
-	
-	hull() {
-		bottom = inch(4.32); //108.8 + 1.6;
-		//top = dimensions[2] - bottom_tray_offset;
-		top = bottom + 14;
-		
-		pci_connectors(inch(0.483), factor = 0.5) {
-			translate([-inch(0.8/2)+pci_tab_offset(), 0, bottom]) cube([inch(0.8), outset, top-bottom]);
-		}
-		
-		pci_connectors(inch(0.483), factor = 0.5) {
-			translate([-inch(0.8/2)+pci_tab_offset(), 0, bottom-2]) cube([inch(0.8), outset, 2]);
-		}
-	}
-	
-	pci_connectors(inch(0.483), factor = 0, index = 1) {
-		translate([0, -6, -8]) rotate([-90, 0, 0]) knurled_hole(3, 12);
-	}
-}
-
 module bottom_storage(dimensions) {
 	offset = dimensions[1]/4;
 	
 	for (y = [-offset:80:offset])
-		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 0, -90]) children();
-}
-
-module rear_pci_bracket(dimensions = internal_size, outset = 6) {
-	case_top = dimensions[2] - bottom_tray_offset;
-	bottom = inch(4.32);
-	top = bottom + 14;
-	size = top - bottom;
-	
-	color("orange")
-	pci_connectors(inch(0.483), factor = 0.5) {
-		translate([pci_tab_offset(), outset, bottom-2]) {
-			rcube([inch(0.8), outset*2, 2], d=3);
-			translate([0, -outset/2, 0]) zcube([inch(0.8), outset, 2]);
-		}
-	}
-	
-	color("orange") pci_express_datum(bottom) {
-		translate([2.84-1.57/2, 64.13, 0]) hole(4, pci_tab_gap(), 0);
-	}
-}
-
-module rear_pci_slots(dimensions = internal_size, thickness = 6, gap = 1.0, height = 8) {
-	color("orange") difference() {
-		pci_connectors(inch(0.483), factor = 0.5) {
-			translate([0, -thickness/2, -bottom_tray_offset]) 
-			difference() {
-				zcube([pci_tab_width(), thickness, height]);
-				translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
-			}
-		}
-		
-		rear_pci_cutout(dimensions);
-	}
+		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 180, -90]) children();
 }
 
 module walls(dimensions = internal_size, thickness = 6) {
@@ -152,8 +83,8 @@ module walls(dimensions = internal_size, thickness = 6) {
 		bottom_storage(dimensions) ssd_cutout();
 		
 		bottom_tray(dimensions) {
-			rear_io_cutout();
-			rear_pci_cutout();
+			atx_io_cutout();
+			pci_rear_cutout();
 		}
 		
 		zcorners() corner_cutout(dimensions);
@@ -162,6 +93,10 @@ module walls(dimensions = internal_size, thickness = 6) {
 
 module front_fan(dimensions) {
 	translate([-70-2.25, -dimensions[1]/2, dimensions[2]/2]) rotate([90, 0, 0]) children();
+}
+
+module side_fan(dimensions) {
+	translate([dimensions[0]/14, -dimensions[1]/14, dimensions[2]]) children();
 }
 
 module top_radiator(dimensions) {
@@ -176,15 +111,15 @@ module back_power_supply(dimensions) {
 	translate([20, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
 }
 
-module bottom_tray(dimensions, offset = bottom_tray_offset) {
-	translate([inch(-4.8)+12, dimensions[1]/2-inch(0.483), offset]) children();
+module bottom_tray(dimensions, offset = atx_tray_offset()) {
+	translate([inch(-4.8)+12, dimensions[1]/2-pci_back_offset(), offset]) children();
 }
 
 module case(dimensions = internal_size) {
 	bottom_tray(dimensions) {
 		motherboard();
 		
-		rear_pci_slots();
+		pci_rear_slots();
 	}
 
 	top_radiator(dimensions) h115i();
@@ -273,15 +208,19 @@ module panel(dimensions = internal_size, thickness = 6) {
 }
 
 module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
-	difference() {
+	render() difference() {
 		translate([0, 0, dimensions[2]]) panel(dimensions, thickness, offset);
 		
 		zcorners() corner_cutout(dimensions);
+		
+		side_fan(dimensions) fan_cutout();
 	}
+	
+	side_fan(dimensions) fan();
 }
 
 module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inset = 2) {
-	difference() {
+	render() difference() {
 		translate([0, 0, -thickness]) panel(dimensions, thickness, offset);
 		
 		zcorners() corner_cutout(dimensions);

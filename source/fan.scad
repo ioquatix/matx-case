@@ -15,9 +15,17 @@ module fan_holes(diameter = 140, spacing = 124.5, z = 10) {
 	translate([outset, -outset, z]) children();
 }
 
-module fan_cutout(diameter = 140, thickness = 6, inset = 4, spacing = 124.5) {
+module fan_cutout(diameter = 140, thickness = 6, inset = 8, spacing = 124.5) {
 	render() {
-		translate([0, 0, -0.1]) cylinder(h = thickness+0.2, r = (diameter - inset)/2);
+		translate([0, 0, -0.1]) difference() {
+			cylinder(h = thickness+0.2, r = (diameter - inset)/2);
+			
+			for (r = [45:90:180]) {
+				rotate([0, 0, r]) zcube([diameter, 6, thickness+0.2]);
+			}
+			
+			cylinder(h = thickness+0.2, r = diameter/10);
+		}
 		
 		/* translate([0, 0, wall]) zcorners() hull() {
 			translate([-spacing/2, -spacing/2, 0]) cylinder_outer(thickness-wall+0.1, (diameter-spacing)/2);

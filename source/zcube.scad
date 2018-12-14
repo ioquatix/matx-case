@@ -11,7 +11,7 @@ module zring(dimensions, thickness, z=0, f=1) {
 	}
 }
 
-module rcube(dimensions, d, z=0, f=1) {
+module rcube(dimensions, d = 1, z=0, f=1) {
 	dx = dimensions[0]/2 - d/2;
 	dy = dimensions[1]/2 - d/2;
 	dz = dimensions[2]/2 * (f-1) + z;
@@ -28,7 +28,7 @@ module zcorners() {
 	children();
 	mirror([1, 0, 0]) children();
 	mirror([0, 1, 0]) children();
-	mirror([1, 1, 0]) children();
+	mirror([1, 0, 0]) mirror([0, 1, 0]) children();
 }
 
 module reflect(axis = [1, 0, 0]) {
