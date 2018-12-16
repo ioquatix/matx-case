@@ -37,10 +37,10 @@ module standoffs() {
 }
 
 module motherboard(thickness = pci_motherboard_thickness()) {
-	/* color("green") render() difference() {
+	color("green") render() difference() {
 		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
 		standoffs() cylinder(d=4, h=10, $fn=12);
-	} */
+	}
 	
 	// A very rough approximation of where the CPU is likely to be.
 	translate([inch(5), inch(-4.5), thickness]) color("silver") zcube([inch(3), inch(2.5), inch(1.5)]);
@@ -55,7 +55,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 		}
 	}
 	
-	pci_rear_bracket_top();
+	//pci_rear_bracket_top();
 	pci_rear_bracket_bottom();
 }
 
@@ -118,6 +118,10 @@ module bottom_tray(dimensions, offset = atx_tray_offset()) {
 module case(dimensions = internal_size) {
 	bottom_tray(dimensions) {
 		motherboard();
+		
+		color("gold") standoffs() {
+			mirror([0, 0, 1]) cylinder(d=5, h=12);
+		}
 		
 		pci_rear_slots();
 	}

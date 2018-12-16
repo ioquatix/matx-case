@@ -3,6 +3,7 @@ use <bolts.scad>;
 use <zcube.scad>;
 
 sfx_dimensions = [125, 100, 63.5];
+//sfx_dimensions = [150, 140, 86];
 
 module sfx(dimensions = sfx_dimensions) {
 	difference() {

@@ -2,6 +2,32 @@
 $radial_error = 0.1;
 $fn = 4*8;
 
+ISO262_COARSE_PITCH = [
+	[1.0, 0.25],
+	[1.2, 0.25],
+	[1.4, 0.2],
+	[1.6, 0.35],
+	[1.8, 0.2],
+	[2.0, 0.4],
+	[2.5, 0.45],
+	[3.0, 0.5],
+	[3.5, 0.35],
+	[4.0, 0.7],
+	[5.0, 0.8],
+	[6.0, 1.0],
+	[7.0, 0.75],
+	[8.0, 1.25],
+	[10.0, 1.5],
+	[12.0, 1.75],
+	[14.0, 1.5],
+	[16.0, 2.0],
+	[30.0, 3.5],
+	[42.0, 4.5],
+	[56.0, 5.5]
+];
+
+function screw_pitch(d) = lookup(d, ISO262_COARSE_PITCH);
+
 module cylinder_outer(height, radius, fn=$fn, radial_error=$radial_error) {
 	fudge = 1/cos(180/fn);
 	cylinder(h=height,r=radius*fudge+$radial_error, $fn=fn);
@@ -12,18 +38,17 @@ module cylinder_inner(height, radius, fn=$fn) {
 }
 
 // Make a hole. The diameter is the size of the screw (e.g. 3 for M3). Depth is how far the hole should go for the thread, and inset is how far out there should be a hole for the head to go.
-module hole(diameter=3, depth=6, inset=10) {
-	cylinder_outer(depth, diameter/2);
+module hole(diameter=3, depth=6, inset=10, pitch=0) {
+	cylinder_outer(depth, (diameter/2)-pitch);
 	translate([0, 0, depth]) cylinder_outer(inset, diameter, 32);
 }
 
-module countersunk_hole(diameter=3, depth=6, inset=10) {
-	hole(diameter, depth, inset);
-	translate([0, 0, depth-diameter/2]) cylinder(r1=diameter/2+$radial_error, r2=diameter+$radial_error, h=diameter/2);
+module threaded_hole(diameter=3, depth=6, inset=10) {
+	hole(diameter, depth, inset, screw_pitch(diameter));
 }
 
-module threaded_countersunk_hole(diameter=3, depth=6, inset=10) {
-	hole(diameter*0.9, depth, inset);
+module countersunk_hole(diameter=3, depth=6, inset=10, pitch=0) {
+	hole(diameter, depth, inset, pitch);
 	translate([0, 0, depth-diameter/2]) cylinder(r1=diameter/2+$radial_error, r2=diameter+$radial_error, h=diameter/2);
 }
 

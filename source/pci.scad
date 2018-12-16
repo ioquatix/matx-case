@@ -1,4 +1,6 @@
 
+$fn = 8*8;
+
 use <zcube.scad>;
 use <bolts.scad>;
 
@@ -45,15 +47,16 @@ function pci_datum_offset() = inch(-0.538) - pci_center_from_datum();
 
 // The distance between cards:
 function pci_center_spacing() = inch(0.8);
-function pci_tab_gap() = inch(0.034);
+// Even thought this is 0.86mm, we make it 1mm to increase tolerance.
+function pci_tab_gap() = 1; //inch(0.034);
 
 // The offset from datum A to the screw.
 function pci_screw_offset() = [inch(0.112) - inch(0.062), inch(2.525), 0];
 
 // The offset of the notch:
-function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)/2, inch(0.365)+0.2, pci_tab_height()];
+function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)/2, inch(0.365) + 0.33, pci_tab_height()];
 // This is inset slightly from the spec:
-function pci_notch_size() = [2.5, inch(0.450 - 0.285)+0.4, pci_tab_gap()];
+function pci_notch_size() = [2.5, inch(0.450 - 0.285)+0.6, pci_tab_gap()];
 
 module pci_card() {
 	// We translate the gtx card to the correct datum:
@@ -88,7 +91,7 @@ module pci_express_connectors(offset = 0) {
 }
 
 module pci_rear_bracket_screw() {
-	translate(pci_screw_offset()) translate([0, 0, -3]) knurled_hole(3, pci_tab_gap() + 3, 4, insert = 3);
+	translate(pci_screw_offset()) translate([0, 0, -3]) threaded_hole(3, pci_tab_gap() + 3, 4, insert = 3, thread=0.9);
 }
 
 module pci_rear_bracket_top(outset = 6) {
@@ -104,9 +107,15 @@ module pci_rear_bracket_top(outset = 6) {
 			}
 		}
 		
-		hull() pci_connectors() {
+		/* hull() pci_connectors() {
 			translate([pci_tab_offset(), pci_tab_outset()/2-outset/2, bottom]) {
 				rcube([pci_tab_width(), (pci_tab_outset()+outset), pci_tab_gap()], d=3);
+			}
+		} */
+		
+		hull() pci_connectors() {
+			translate([pci_tab_offset(), outset, bottom]) {
+				zcube([pci_tab_width(), outset*2, pci_tab_gap()], d=3);
 			}
 		}
 		
