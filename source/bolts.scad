@@ -39,7 +39,7 @@ module cylinder_inner(height, radius, fn=$fn) {
 
 // Make a hole. The diameter is the size of the screw (e.g. 3 for M3). Depth is how far the hole should go for the thread, and inset is how far out there should be a hole for the head to go.
 module hole(diameter=3, depth=6, inset=10, pitch=0) {
-	cylinder_outer(depth, (diameter/2)-pitch);
+	cylinder_outer(depth, (diameter-pitch)/2);
 	translate([0, 0, depth]) cylinder_outer(inset, diameter, 32);
 }
 
