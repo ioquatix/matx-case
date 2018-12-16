@@ -170,6 +170,25 @@ module pci_rear_bracket_bottom(outset = 6, bevel = 1) {
 		pci_express_datum(bottom) {
 			pci_rear_bracket_screw();
 		}
+		
+		// This makes a space for the notch:
+		color("purple") pci_connectors(offset=0) {
+			translate(pci_notch_offset()) {
+				hull() {
+					translate([0, -2, 0]) zcube([3.1, 1, 2]);
+					translate([0, 5, -1.5]) zcube([12, 1, 2]);
+				}
+			}
+		}
+	}
+	
+	color("purple") pci_connectors(offset=0) {
+		center = pci_notch_offset();
+		size = pci_notch_size();
+		
+		translate([center[0], outset*1.5, center[2]]) {
+			mirror([0, 0, 1]) zcube([size[0], outset, size[2]+2]);
+		}
 	}
 }
 
