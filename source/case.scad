@@ -80,7 +80,7 @@ module walls(dimensions = internal_size, thickness = 6) {
 		front_fan(dimensions) fan_cutout();
 		top_radiator(dimensions) h115i_cutout();
 		back_power_supply(dimensions) sfx_cutout();
-		bottom_storage(dimensions) ssd_cutout();
+		//bottom_storage(dimensions) ssd_cutout();
 		
 		bottom_tray(dimensions) {
 			atx_io_cutout();
