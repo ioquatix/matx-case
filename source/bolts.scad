@@ -1,6 +1,6 @@
 
 $radial_error = 0.1;
-$fn = 4*8;
+$fn = 8*4;
 
 ISO262_COARSE_PITCH = [
 	[1.0, 0.25],

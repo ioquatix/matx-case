@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 8*8;
+$fn = 8*4;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -14,8 +14,8 @@ use <pci.scad>;
 
 function inch(x) = x * 25.4;
 
-// The case is 16mm larger from the internal size on each edge, so 320+16+16
-internal_size = [324, 324, 144];
+// The case is 12mm larger from the internal size on each edge, so 340+12+12
+internal_size = [320, 320, 148];
 
 module standoffs() {
 	// DATUM B as per the microATX specification is the origin.
@@ -39,7 +39,7 @@ module standoffs() {
 module motherboard(thickness = pci_motherboard_thickness()) {
 	color("green") render() difference() {
 		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
-		standoffs() cylinder(d=4, h=10, $fn=12);
+		standoffs() cylinder(d=4, h=10, $fn=8);
 	}
 	
 	// A very rough approximation of where the CPU is likely to be.
@@ -59,12 +59,6 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 	pci_rear_bracket_bottom();
 }
 
-module rear_powersupply() {
-	translate([inch(2.096+3), inch(0.483-2), inch(2)]) {
-		power_supply();
-	}
-}
-
 module bottom_storage(dimensions) {
 	offset = dimensions[1]/4;
 	
@@ -72,14 +66,41 @@ module bottom_storage(dimensions) {
 		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 180, -90]) children();
 }
 
-module walls(dimensions = internal_size, thickness = 6) {
-	color("white") render() difference() {
-		zsides(dimensions, thickness, 6);
+module wall_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 12) {
+	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
+		cube([thickness, thickness, dimensions[2]]);
 		
-		front_controls(dimensions) bay_cutout();
+		// Bottom cutout:
+		zcube([12, 12, 9]);
+		translate([-15, -15, 0]) cube([15, 15, 9]);
+		
+		// Top cutout:
+		translate([0, 0, dimensions[2] - 9]) {
+			zcube([12, 12, 9]);
+			translate([-15, -15, 0]) cube([15, 15, 9]);
+		}
+	}
+}
+
+module walls(dimensions = internal_size, thickness = 6) {
+	//color("white") render() 
+	difference() {
+		zsides(dimensions, thickness, 0);
+		
+		zcorners() wall_cutout(dimensions);
+	}
+}
+
+module sides(dimensions = internal_size, thickness = 6) {
+	color("white") render() difference() {
+		walls();
+		
+		// front_controls(dimensions) bay_cutout();
 		front_fan(dimensions) fan_cutout();
-		top_radiator(dimensions) h115i_cutout();
+		// top_fan(dimensions) fan_cutout();
+		
 		back_power_supply(dimensions) sfx_cutout();
+		back_fans(dimensions) fan_cutout(80);
 		//bottom_storage(dimensions) ssd_cutout();
 		
 		bottom_tray(dimensions) {
@@ -93,14 +114,26 @@ module walls(dimensions = internal_size, thickness = 6) {
 
 module front_fan(dimensions) {
 	translate([-70-2.25, -dimensions[1]/2, dimensions[2]/2]) rotate([90, 0, 0]) children();
+	translate([+70+2.25, -dimensions[1]/2, dimensions[2]/2]) rotate([90, 0, 0]) children();
+}
+
+module top_fan(dimensions) {
+	mirror([0, 1, 0]) {
+		translate([dimensions[0]/2, -70-2.25, dimensions[2]/2]) rotate([90, 0, 90]) children();
+		translate([dimensions[0]/2, +70+2.25, dimensions[2]/2]) rotate([90, 0, 90]) children();
+	}
 }
 
 module side_fan(dimensions) {
 	translate([dimensions[0]/14, -dimensions[1]/14, dimensions[2]]) children();
 }
 
-module top_radiator(dimensions) {
-	translate([dimensions[0]/2, 0, dimensions[2]/2]) children();
+module side_duct(dimensions) {
+	bottom_tray(dimensions, offset=dimensions[2]) {
+		translate([-3, 0, 0]) {
+			pci_connectors(index = 0, count = 1) children();
+		}
+	}
 }
 
 module front_controls(dimensions) {
@@ -108,11 +141,16 @@ module front_controls(dimensions) {
 }
 
 module back_power_supply(dimensions) {
-	translate([20, dimensions[1]/2, dimensions[2]-4]) rotate([0, 0, 180]) children();
+	translate([dimensions[0]/2-(64), dimensions[1]/2, dimensions[2]/2]) rotate([0, 90, 180]) children();
+}
+
+module back_fans(dimensions) {
+	translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
 }
 
 module bottom_tray(dimensions, offset = atx_tray_offset()) {
-	translate([inch(-4.8)+12, dimensions[1]/2-pci_back_offset(), offset]) children();
+	translate([inch(-9.6/2)+3.5, dimensions[1]/2-pci_back_offset(), offset]) children();
 }
 
 module case(dimensions = internal_size) {
@@ -126,12 +164,13 @@ module case(dimensions = internal_size) {
 		pci_rear_slots();
 	}
 
-	top_radiator(dimensions) h115i();
 	back_power_supply(dimensions) sfx();
+	back_fans(dimensions) fan(80);
 	front_fan(dimensions) fan();
+	// top_fan(dimensions) fan();
 	bottom_storage(dimensions) ssd_with_standoff();
 	
-	walls(dimensions);
+	sides(dimensions);
 	
 	render() difference() {
 		zcorners() corner();
@@ -143,7 +182,7 @@ module corner(dimensions = internal_size, thickness = 6) {
 	sx = dimensions[0]+thickness*2;
 	sy = dimensions[1]+thickness*2;
 	
-	intersection() {
+	render() intersection() {
 		union() {
 			difference() {
 				rcube([sx, sy, dimensions[2]], d=thickness*2);
@@ -162,10 +201,11 @@ module corner(dimensions = internal_size, thickness = 6) {
 		}
 		
 		cube(dimensions);
+		wall_cutout();
 	}
 }
 
-module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 12) {
+module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 9) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
 		// Requires knurled insert M6x12x8
 		translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
@@ -175,7 +215,7 @@ module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness 
 		
 		bolt_size = 3;
 		inset = (thickness*1.5)/2;
-		vertical_offset = (dimensions[2]-inset*2) / 3;
+		vertical_offset = (dimensions[2]-inset*2);
 		
 		for (dz = [inset:vertical_offset:dimensions[2]]) {
 			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
@@ -211,21 +251,31 @@ module panel(dimensions = internal_size, thickness = 6) {
 	}
 }
 
-module top_panel(dimensions = internal_size, thickness = 6, offset = 10) {
+module gpu_duct_cutout(dimensions = internal_size, thickness = 6) {
+	translate([0, -120, -0.1]) {
+		reflect([0, 1, 0]) translate([0, 200/2 + 5, 0]) hole(4, thickness);
+		rcube([18, 200, thickness+0.2], d=6);
+	}
+}
+
+
+module top_panel(dimensions = internal_size, thickness = 6) {
 	render() difference() {
-		translate([0, 0, dimensions[2]]) panel(dimensions, thickness, offset);
+		translate([0, 0, dimensions[2]]) panel(dimensions, thickness);
 		
 		zcorners() corner_cutout(dimensions);
 		
-		side_fan(dimensions) fan_cutout();
+		side_duct(dimensions) gpu_duct_cutout();
+		
+		//side_fan(dimensions) fan_cutout();
 	}
 	
-	side_fan(dimensions) fan();
+	//side_fan(dimensions) fan();
 }
 
-module bottom_panel(dimensions = internal_size, thickness = 6, offset = 10, inset = 2) {
+module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
 	render() difference() {
-		translate([0, 0, -thickness]) panel(dimensions, thickness, offset);
+		translate([0, 0, -thickness]) panel(dimensions, thickness);
 		
 		zcorners() corner_cutout(dimensions);
 		

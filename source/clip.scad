@@ -1,6 +1,4 @@
 
-$fn = 32;
-
 module wall(length, height=1, r=1) {
 	translate([r, r, 0]) hull() {
 		cylinder(r=r, h=height);

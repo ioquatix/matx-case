@@ -2,11 +2,30 @@
 use <bolts.scad>;
 use <zcube.scad>;
 
+SPACING = [
+	[40, 32],
+	[50, 40],
+	[60, 50],
+	[70, 60],
+	[80, 71.5],
+	[92, 82.5],
+	[120, 105],
+	[140, 124.5],
+	[200, 154],
+	[220, 170]
+];
+
+function screw_spacing(d) = lookup(d, SPACING);
+
 module fan(diameter = 140, thickness = 25) {
-	translate([-diameter/2, -diameter/2, -thickness]) color("blue") cube([diameter, diameter, thickness]);
+	difference() {
+		translate([-diameter/2, -diameter/2, -thickness]) color("blue") cube([diameter, diameter, thickness]);
+		translate([0, 0, -thickness-1]) cylinder(d=diameter, h=thickness+2);
+	}
 }
 
-module fan_holes(diameter = 140, spacing = 124.5, z = 10) {
+module fan_holes(diameter = 140, z = 10) {
+	spacing = screw_spacing(diameter);
 	outset = spacing / 2;
 	
 	translate([outset, outset, z]) children();
@@ -15,7 +34,7 @@ module fan_holes(diameter = 140, spacing = 124.5, z = 10) {
 	translate([outset, -outset, z]) children();
 }
 
-module fan_cutout(diameter = 140, thickness = 6, inset = 8, spacing = 124.5) {
+module fan_cutout(diameter = 140, thickness = 6, inset = 2, spacing = 124.5) {
 	render() {
 		translate([0, 0, -0.1]) difference() {
 			cylinder(h = thickness+0.2, r = (diameter - inset)/2);
@@ -33,10 +52,10 @@ module fan_cutout(diameter = 140, thickness = 6, inset = 8, spacing = 124.5) {
 		} */
 		
 		// The screw is M3, but we make the hole M4 so it won't hold a thread.
-		fan_holes(diameter, spacing) translate([0, 0, -35]) hole(4, 35);
+		fan_holes(diameter) translate([0, 0, -35]) hole(4, 35);
 	}
 }
 
 //color("brown") fan();
 //#fan_holes() translate([0, 0, -35]) hole(3, 35);
-fan_cutout(80, spacing=80-10);
+fan_cutout(80);

@@ -10,6 +10,8 @@ module sfx(dimensions = sfx_dimensions) {
 		// http://silverstonetek.com/goods_cable_define/sx500-g-cable-define.pdf
 		color("grey") translate([-dimensions[0]/2, 0, -dimensions[2]]) cube(dimensions);
 		sfx_holes() rotate(90, [1, 0, 0]) hole(3, 10);
+		
+		translate([0, dimensions[1]/2, -4]) cylinder(d=92,h=5);
 	}
 }
 

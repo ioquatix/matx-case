@@ -1,6 +1,4 @@
 
-$fn = 8*8;
-
 use <zcube.scad>;
 use <bolts.scad>;
 
@@ -39,7 +37,7 @@ function pci_tab_height() = pci_motherboard_offset() + 100.36;
 
 // The distance between PCI slots:
 function pci_spacing() = inch(0.8);
-function pci_tab_spacing() = inch(0.8) + 6;
+function pci_tab_spacing() = inch(0.8);
 
 // The distance from the Z datum to the center of the PCI cutout.
 function pci_center_from_datum() = inch(0.062/2) + inch(0.014) + inch(0.475/2);
@@ -58,11 +56,11 @@ function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)
 // This is inset slightly from the spec:
 function pci_notch_size() = [2.5, inch(0.450 - 0.285)+0.6, pci_tab_gap()];
 
-module pci_card() {
+module pci_card(offset = 0) {
 	// We translate the gtx card to the correct datum:
 	//-7 + 3.65/2 + 8.25 - 4.85 - 7.25
 	// This seems to be short by 0.128 on the Z axis?
-	translate([1.6/2, 8/2 + 3.65 + 12.15, 3.1-8.25-3.85]) rotate([90, 0, -90]) import("gtx.stl", convexity=4);
+	translate([1.6/2, 8/2 + 3.65 + 12.15, 3.1-8.25-3.85+offset]) rotate([90, 0, -90]) import("gtx.stl", convexity=4);
 }
 
 module pci_connectors(inset = pci_back_offset(), offset = pci_center_from_datum(), index = 0, count = pci_count()) {
@@ -193,11 +191,15 @@ module pci_rear_bracket_bottom(outset = 6, bevel = 1) {
 }
 
 module pci_rear_slots(thickness = 6, gap = 1.2, height = 8) {
-	color("orange") render() difference() {
-		pci_connectors() {
-			translate([0, -thickness/2, -atx_tray_offset()]) 
-			difference() {
-				zcube([pci_slot_spacing(), thickness, height]);
+	color("purple") difference() {
+		difference() {
+			hull() pci_connectors() {
+				translate([2, -thickness/2, -atx_tray_offset()])
+				zcube([pci_slot_spacing()-6, thickness, height]);
+			}
+			
+			pci_connectors() {
+				translate([0, -thickness/2, -atx_tray_offset()]) 
 				translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
 			}
 		}
@@ -237,7 +239,8 @@ module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 	}
 	
 	pci_connectors(index = 1) {
-		translate([inch(0.4), -6, -8]) rotate([-90, 0, 0]) knurled_hole(3, 12);
+		// Bring the hole into alignment with the corner brackets.
+		translate([inch(0.4), -6, -12 + (9/2)]) rotate([-90, 0, 0]) knurled_hole(3, 12);
 	}
 }
 
