@@ -89,7 +89,7 @@ module pci_express_connectors(offset = 0) {
 }
 
 module pci_rear_bracket_screw() {
-	translate(pci_screw_offset()) translate([0, 0, -3]) threaded_hole(3, pci_tab_gap() + 3, 4, insert = 3, thread=0.9);
+	translate(pci_screw_offset()) translate([0, 0, -3]) threaded_hole(3, pci_tab_gap() + 3, 4);
 }
 
 module pci_rear_bracket_top(outset = 6) {

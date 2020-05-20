@@ -11,6 +11,7 @@ use <bay.scad>;
 use <ssd.scad>;
 use <fan.scad>;
 use <pci.scad>;
+use <cable.scad>;
 
 function inch(x) = x * 25.4;
 
@@ -59,11 +60,8 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 	pci_rear_bracket_bottom();
 }
 
-module bottom_storage(dimensions) {
-	offset = dimensions[1]/4;
-	
-	for (y = [-offset:80:offset])
-		translate([-dimensions[0]/2, y, dimensions[2]/2]) rotate([-90, 180, -90]) children();
+module top_storage(dimensions) {
+	translate([dimensions[0]/2, 0, dimensions[2]/2]) rotate([-90, 180, 90]) children();
 }
 
 module wall_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 12) {
@@ -95,13 +93,13 @@ module sides(dimensions = internal_size, thickness = 6) {
 	color("white") render() difference() {
 		walls();
 		
-		// front_controls(dimensions) bay_cutout();
+		top_controls(dimensions) bay_cutout();
 		front_fan(dimensions) fan_cutout();
 		// top_fan(dimensions) fan_cutout();
 		
 		back_power_supply(dimensions) sfx_cutout();
 		back_fans(dimensions) fan_cutout(80);
-		//bottom_storage(dimensions) ssd_cutout();
+		top_storage(dimensions) ssd_cage_cutout();
 		
 		bottom_tray(dimensions) {
 			atx_io_cutout();
@@ -136,8 +134,12 @@ module side_duct(dimensions) {
 	}
 }
 
-module front_controls(dimensions) {
-	translate([dimensions[0]/4, -dimensions[1]/2, dimensions[2]/2]) rotate([0, 90, 0]) bay_offset() children();
+module top_controls(dimensions) {
+	translate([dimensions[0]/2, -dimensions[1]*0.3, dimensions[2]/2]) {
+		rotate([0, 90, 0]) {
+			children();
+		}
+	}
 }
 
 module back_power_supply(dimensions) {
@@ -168,7 +170,7 @@ module case(dimensions = internal_size) {
 	back_fans(dimensions) fan(80);
 	front_fan(dimensions) fan();
 	// top_fan(dimensions) fan();
-	bottom_storage(dimensions) ssd_with_standoff();
+	top_storage(dimensions) ssd_cage();
 	
 	sides(dimensions);
 	
@@ -179,29 +181,13 @@ module case(dimensions = internal_size) {
 }
 
 module corner(dimensions = internal_size, thickness = 6) {
-	sx = dimensions[0]+thickness*2;
-	sy = dimensions[1]+thickness*2;
-	
 	render() intersection() {
-		union() {
-			difference() {
-				rcube([sx, sy, dimensions[2]], d=thickness*2);
-				
-				zcube([dimensions[0]+thickness*2, dimensions[1]-thickness*2, dimensions[2]]);
-				zcube([dimensions[0]-thickness*2, dimensions[1]+thickness*2, dimensions[2]]);
-			}
-			
-			difference() {
-				zcube(dimensions);
-				
-				zcube([dimensions[0], dimensions[1]-thickness*5, dimensions[2]]);
-				zcube([dimensions[0]-thickness*5, dimensions[1], dimensions[2]]);
-				zcube([dimensions[0]-thickness*2, dimensions[1]-thickness*2, dimensions[2]]);
-			}
+		difference() {
+			wall_cutout();
+			rcube([dimensions[0]-thickness*1.5, dimensions[0]-thickness*1.5, dimensions[2]], d=thickness*4, $fn=4);
 		}
 		
-		cube(dimensions);
-		wall_cutout();
+		rcube([dimensions[0]+thickness*3.5, dimensions[1]+thickness*3.5, dimensions[2]], d=thickness*4, $fn=4);
 	}
 }
 
@@ -253,7 +239,7 @@ module panel(dimensions = internal_size, thickness = 6) {
 
 module gpu_duct_cutout(dimensions = internal_size, thickness = 6) {
 	translate([0, -120, -0.1]) {
-		reflect([0, 1, 0]) translate([0, 200/2 + 5, 0]) hole(4, thickness);
+		reflect([0, 1, 0]) translate([0, 200/2 + 6, 0]) hole(4, thickness);
 		rcube([18, 200, thickness+0.2], d=6);
 	}
 }
@@ -266,16 +252,25 @@ module top_panel(dimensions = internal_size, thickness = 6) {
 		zcorners() corner_cutout(dimensions);
 		
 		side_duct(dimensions) gpu_duct_cutout();
-		
-		//side_fan(dimensions) fan_cutout();
 	}
+}
+
+module cable_clamps(dimensions = internal_size) {
+	translate([dimensions[0]/2-35, 40, 0]) children();
+	translate([dimensions[0]/2-35, -40, 0]) children();
 	
-	//side_fan(dimensions) fan();
+	//translate([dimensions[0]/2-35, -120, 0]) rotate([0, 0, -45]) children();
+	
+	//translate([dimensions[0]/2-35, -120, 0]) rotate([0, 0, -90]) children();
 }
 
 module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
+	cable_clamps(dimensions) cable_clamp();
+	
 	render() difference() {
 		translate([0, 0, -thickness]) panel(dimensions, thickness);
+		
+		cable_clamps(dimensions) cable_clamp_cutout();
 		
 		zcorners() corner_cutout(dimensions);
 		

@@ -2,7 +2,8 @@
 use <bolts.scad>;
 use <zcube.scad>;
 
-ssd_dimensions = [70, 100, 7];
+// The height of SSDs is variable.
+ssd_dimensions = [70, 100, 8];
 
 module ssd(dimensions = ssd_dimensions) {
 	color("silver") translate([0, -dimensions[1]/2, 0]) difference() {
@@ -26,7 +27,9 @@ module ssd_holes_bottom(dimensions = ssd_dimensions, width = 61.71, inset = [14,
 	}
 }
 
-module ssd_holes_side(dimensions = ssd_dimensions, offset = 3, inset = [14, 90.6]) {
+module ssd_holes_side(dimensions = ssd_dimensions, inset = [14, 90.6]) {
+	offset = dimensions[2] / 2;
+	
 	translate([0, 0, offset]) {
 		translate([dimensions[0]/2, inset[0], 0]) rotate([0, 90, 0]) children();
 		translate([dimensions[0]/2, inset[1], 0]) rotate([0, 90, 0]) children();
@@ -79,3 +82,49 @@ module ssd_with_standoff(thickness=6) {
 		ssd();
 	}
 }
+
+module ssd_cage(dimensions = ssd_dimensions, height=12, bays = 3) {
+	clearance = height - dimensions[2];
+	
+	color("brown")
+	//render()
+	difference() {
+		union() {
+			translate([-38, 0, 0]) zcube([12, dimensions[1], height*bays + clearance]);
+			translate([38, 0, 0]) zcube([12, dimensions[1], height*bays + clearance]);
+		}
+		
+		translate([-38-9, 0, clearance]) zcube([12, dimensions[1], height*bays]);
+		translate([38+9, 0, clearance]) zcube([12, dimensions[1], height*bays]);
+		
+		translate([0, 0, clearance])
+		zcube([dimensions[0]*2, dimensions[1]/7*4, height*bays+1]);
+		
+		for (offset = [clearance:height:height*bays]) {
+			translate([0, 0, offset]) {
+				zcube(dimensions);
+				
+				translate([0, -dimensions[1]/2, 0])
+				ssd_holes_side() hole(3, 2);
+			}
+		}
+		
+		ssd_cage_cutout();
+	}
+}
+
+module ssd_cage_holes(dimensions = ssd_dimensions, inset=5) {
+	mirror([0, 0, 1]) {
+		zcorners() 
+		translate([dimensions[0]/2+3, dimensions[1]/2 - 6, -inset])
+		children();
+	}
+}
+
+module ssd_cage_cutout(dimensions = ssd_dimensions, thickness=6) {
+	ssd_cage_holes() #knurled_hole(3, 6+5, insert=5);
+}
+
+ssd_cage();
+
+//ssd_with_standoff();
