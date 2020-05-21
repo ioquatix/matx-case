@@ -37,11 +37,8 @@ module reflect(axis = [1, 0, 0]) {
 }
 
 module zsides(dimensions, thickness, inset=0) {
-	reflect([1, 0, 0]) {
-		translate([thickness/2+dimensions[0]/2, 0, dimensions[2]/2]) cube([thickness, dimensions[1]-inset*2, dimensions[2]], true);
-	}
-	
-	reflect([0, 1, 0]) {
-		translate([0, thickness/2+dimensions[1]/2, dimensions[2]/2]) cube([dimensions[0]-inset*2, thickness, dimensions[2]], true);
+	difference() {
+		zcube(dimensions + [thickness*2, thickness*2, 0]);
+		zcube(dimensions);
 	}
 }

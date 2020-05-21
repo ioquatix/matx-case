@@ -23,8 +23,8 @@ module cable_clamp(width = 48, height = 12) {
 
 module cable_clamp_cutout(width = 48, height = 12) {
 	mirror([0, 0, 1]) {
-		#translate([width/2, 0, 0]) hole(3, 6);
-		#translate([-width/2, 0, 0]) hole(3, 6);
+		translate([width/2, 0, 0]) hole(3, 6);
+		translate([-width/2, 0, 0]) hole(3, 6);
 	}
 }
 

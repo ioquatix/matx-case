@@ -1,6 +1,6 @@
 
 $tolerance = 0.1;
-$fn = 8*4;
+$fn = $preview ? 12 : 32;
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -56,7 +56,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 		}
 	}
 	
-	//pci_rear_bracket_top();
+	pci_rear_bracket_top();
 	pci_rear_bracket_bottom();
 }
 
@@ -255,22 +255,33 @@ module top_panel(dimensions = internal_size, thickness = 6) {
 	}
 }
 
-module cable_clamps(dimensions = internal_size) {
-	translate([dimensions[0]/2-35, 40, 0]) children();
-	translate([dimensions[0]/2-35, -40, 0]) children();
+module cable_clamps_top(dimensions = internal_size) {
+	increment = dimensions[1]/4;
 	
-	//translate([dimensions[0]/2-35, -120, 0]) rotate([0, 0, -45]) children();
+	translate([dimensions[0]/2-35, -increment/2, 0]) children();
+	translate([dimensions[0]/2-35, increment/2, 0]) children();
+}
+
+module cable_clamps_front(dimensions = internal_size) {
+	half = dimensions[0]/2;
+	increment = dimensions[0]/4;
 	
-	//translate([dimensions[0]/2-35, -120, 0]) rotate([0, 0, -90]) children();
+	for (offset = [-half+increment:increment:half-increment]) {
+		translate([offset, -110, 0]) rotate([0, 0, 90]) children();
+	}
 }
 
 module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
-	cable_clamps(dimensions) cable_clamp();
+	if ($preview) {
+		cable_clamps_top(dimensions) cable_clamp(48);
+		cable_clamps_front(dimensions) cable_clamp(30);
+	}
 	
 	render() difference() {
 		translate([0, 0, -thickness]) panel(dimensions, thickness);
 		
-		cable_clamps(dimensions) cable_clamp_cutout();
+		cable_clamps_top(dimensions) cable_clamp_cutout(48);
+		cable_clamps_front(dimensions) cable_clamp_cutout(30);
 		
 		zcorners() corner_cutout(dimensions);
 		

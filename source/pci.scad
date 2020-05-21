@@ -113,14 +113,14 @@ module pci_rear_bracket_top(outset = 6) {
 		
 		hull() pci_connectors() {
 			translate([pci_tab_offset(), outset, bottom]) {
-				zcube([pci_tab_width(), outset*2, pci_tab_gap()], d=3);
+				zcube([pci_tab_width(), outset*2, pci_tab_gap()]);
 			}
 		}
 		
 		pci_express_datum(bottom) {
 			hull() {
 				pci_rear_bracket_screw();
-				translate([0, -outset, 0]) pci_rear_bracket_screw();
+				translate([0, -outset, 0]) # pci_rear_bracket_screw();
 			}
 		}
 	}
