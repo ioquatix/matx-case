@@ -44,7 +44,12 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 	}
 	
 	// A very rough approximation of where the CPU is likely to be.
-	translate([inch(5), inch(-4.5), thickness]) color("silver") zcube([inch(3), inch(2.5), inch(1.5)]);
+	translate([inch(5), inch(-4.5), thickness]) color("silver") {
+		zcube([inch(3), inch(2.5), 10]);
+		translate([0, 0, 10]) fan_d9l();
+	}
+	
+	
 	
 	// Origin the surface of the PCB.
 	translate([0, 0, thickness]) {
@@ -147,8 +152,9 @@ module back_power_supply(dimensions) {
 }
 
 module back_fans(dimensions) {
-	translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
-	translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	//translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	//translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	translate([0, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
 }
 
 module bottom_tray(dimensions, offset = atx_tray_offset()) {
@@ -157,20 +163,19 @@ module bottom_tray(dimensions, offset = atx_tray_offset()) {
 
 module case(dimensions = internal_size) {
 	bottom_tray(dimensions) {
-		motherboard();
-		
-		color("gold") standoffs() {
-			mirror([0, 0, 1]) cylinder(d=5, h=12);
+		if ($preview) {
+			motherboard();
+			pci_rear_slots();
 		}
-		
-		pci_rear_slots();
 	}
-
-	back_power_supply(dimensions) sfx();
-	back_fans(dimensions) fan(80);
-	front_fan(dimensions) fan();
-	// top_fan(dimensions) fan();
-	top_storage(dimensions) ssd_cage();
+	
+	if ($preview) {
+		back_power_supply(dimensions) sfx();
+		back_fans(dimensions) fan(80);
+		front_fan(dimensions) fan();
+		// top_fan(dimensions) fan();
+		top_storage(dimensions) ssd_cage();
+	}
 	
 	sides(dimensions);
 	
@@ -275,6 +280,10 @@ module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
 	if ($preview) {
 		cable_clamps_top(dimensions) cable_clamp(48);
 		cable_clamps_front(dimensions) cable_clamp(30);
+		
+		bottom_tray(dimensions, 0) {
+			standoffs() standoff();
+		}
 	}
 	
 	render() difference() {
@@ -287,7 +296,7 @@ module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
 		
 		bottom_tray(dimensions, 0) {
 			difference() {
-				translate([0, 0, -6]) standoffs() color("yellow") hole(3, 6, 12);
+				standoffs() standoff_hole();
 			}
 		}
 	}
