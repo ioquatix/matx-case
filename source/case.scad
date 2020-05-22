@@ -252,8 +252,10 @@ module top_panel(dimensions = internal_size, thickness = 6) {
 		}
 	}
 	
-	side_duct(dimensions) {
-		duct();
+	if ($preview) {
+		side_duct(dimensions) {
+			duct();
+		}
 	}
 }
 
