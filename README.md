@@ -15,6 +15,24 @@ In addition, I travel quite a bit and I wanted a computer that was small. Most c
 - 12mm (6mm thread) brass stand-offs for motherboard.
 - ... more stuff ...
 
+### Inventory
+
+- M3 x 12mm (6mm inset) brass standoffs.
+- M3 x 6mm (6mm inset) brass standoffs.
+
+- M3 x 12mm flat head screws.
+- M3 x 8mm flat head screws.
+- M4 x 14mm flat head screws.
+
+- M3 x 8mm (5mm OD) knurled inserts.
+- M3 x 10mm (5mm OD) knurled inserts.
+- M3 x 12mm (5mm OD) knurled inserts.
+- M3 x 6mm (5mm OD) knurled inserts.
+- M4 x 8mm (6mm OD) knurled inserts.
+- M6 x 12mm (8mm OD) knurled inserts.
+- M4 x 4mm (6mm OD) knurled inserts.
+- M3 x 4mm (5mm OD) knurled inserts.
+
 ### Power Supply
 
 The [Corsair SF600 Platinum][1] has flat SATA cables and fits well.
