@@ -1,3 +1,7 @@
+/*
+	- Hole sizes confirmed.
+	- Spacing sizes confirmed.
+*/
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -55,8 +59,8 @@ module fan_cutout(diameter = 140, thickness = 6, inset = 2, spacing = 124.5) {
 			cylinder_outer(thickness-wall+0.1, diameter/5);
 		} */
 		
-		// The screw is M3, but we make the hole M4 so it won't hold a thread.
-		fan_holes(diameter) translate([0, 0, -35]) hole(4, 35);
+		// The "standard hole" is inch(7/32) = 5.5mm, but most cases use M5 holes and as the heads of the screws OD=6mm, we prefer OD=5mm for the hole... better to be a little bit tight than a little bit loose... considering the accuracy of laser cutters can be around 0.3mm.
+		fan_holes(diameter) translate([0, 0, -35]) hole(5, 35);
 	}
 }
 

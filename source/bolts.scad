@@ -102,3 +102,9 @@ render() rotate(90, [1, 0, 0]) difference() {
 	translate([25, 5, 0]) countersunk_hole(diameter=4, depth=8);
 	translate([35, 5, 0]) knurled_hole();
 }
+
+!render() rotate(90, [1, 0, 0]) difference() {
+	cube([6*4, 12, 12]);
+	translate([6, 6, 0]) hole(diameter=5, depth=8);
+	translate([6*3, 6, 0]) hole(diameter=5.5, depth=8);
+}

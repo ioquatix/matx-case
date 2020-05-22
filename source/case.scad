@@ -66,7 +66,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 }
 
 module top_storage(dimensions) {
-	translate([dimensions[0]/2, 0, dimensions[2]/2]) rotate([-90, 180, 90]) children();
+	translate([dimensions[0]/2, 0, dimensions[2]/2]) rotate([0, 90, 0]) rotate([0, 0, 90]) children();
 }
 
 module wall_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 12) {
@@ -148,7 +148,7 @@ module top_controls(dimensions) {
 }
 
 module back_power_supply(dimensions) {
-	translate([dimensions[0]/2-(64), dimensions[1]/2, dimensions[2]/2]) rotate([0, 90, 180]) children();
+	translate([dimensions[0]/2-(64), dimensions[1]/2, dimensions[2]/2]) rotate([0, -90, 180]) children();
 }
 
 module back_fans(dimensions) {
@@ -222,7 +222,7 @@ module panel(dimensions = internal_size, thickness = 6) {
 	
 	difference() {
 		intersection() {
-			rcube([sx, sy, thickness], d=thickness*2);
+			rcube([sx, sy, thickness], d=thickness*2, $fn=4);
 			
 			ix = dimensions[0]/2+thickness;
 			iy = dimensions[1]/2+thickness;
