@@ -17,6 +17,10 @@ SPACING = [
 
 function screw_spacing(d) = lookup(d, SPACING);
 
+module fan_d9l() {
+	zcube([95, 95, 110]);
+}
+
 module fan(diameter = 140, thickness = 25) {
 	difference() {
 		translate([-diameter/2, -diameter/2, -thickness]) color("blue") cube([diameter, diameter, thickness]);
