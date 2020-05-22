@@ -12,6 +12,7 @@ use <ssd.scad>;
 use <fan.scad>;
 use <pci.scad>;
 use <cable.scad>;
+use <duct.scad>;
 
 function inch(x) = x * 25.4;
 
@@ -48,8 +49,6 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 		zcube([inch(3), inch(2.5), 10]);
 		translate([0, 0, 10]) fan_d9l();
 	}
-	
-	
 	
 	// Origin the surface of the PCB.
 	translate([0, 0, thickness]) {
@@ -242,21 +241,19 @@ module panel(dimensions = internal_size, thickness = 6) {
 	}
 }
 
-module gpu_duct_cutout(dimensions = internal_size, thickness = 6) {
-	translate([0, -120, -0.1]) {
-		reflect([0, 1, 0]) translate([0, 200/2 + 6, 0]) hole(4, thickness);
-		rcube([18, 200, thickness+0.2], d=6);
-	}
-}
-
-
 module top_panel(dimensions = internal_size, thickness = 6) {
 	render() difference() {
 		translate([0, 0, dimensions[2]]) panel(dimensions, thickness);
 		
 		zcorners() corner_cutout(dimensions);
 		
-		side_duct(dimensions) gpu_duct_cutout();
+		side_duct(dimensions) {
+			duct_cutout();
+		}
+	}
+	
+	side_duct(dimensions) {
+		duct();
 	}
 }
 
