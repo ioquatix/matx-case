@@ -2,7 +2,13 @@
 include <../source/case.scad>;
 
 panel = [1200, 600, 6];
-margin = [80, 30];
+margin = [40, 40];
+
+if ($preview) {
+	color("white")
+	translate([0, 0, -6])
+	cube(panel);
+}
 
 module wall_projection(index = 0) {
 	projection()
