@@ -1,3 +1,7 @@
+/*
+	- Hole sizes confirmed.
+	- Spacing sizes confirmed.
+*/
 
 use <bolts.scad>;
 use <zcube.scad>;
@@ -18,26 +22,25 @@ module sfx(dimensions = sfx_dimensions) {
 	zcube([dimensions[0], 18, dimensions[2]/2]);
 }
 
-module sfx_holes(inset = 6, dimensions = sfx_dimensions) {
+module sfx_holes(inset = 6, f = 1.0, dimensions = sfx_dimensions) {
 	width = dimensions[0];
 	height = dimensions[2];
 	
-	translate([-width/2+inset, 0, inset]) children();
-	translate([width/2-inset, 0, inset]) children();
+	translate([-width/2+inset, 0, inset*f]) children();
+	translate([width/2-inset, 0, inset*f]) children();
 	
-	// TODO I don't know if this is correct..
 	translate([-width/2+inset, 0, height/2]) children();
 	translate([width/2-inset, 0, height/2]) children();
 	
-	translate([-width/2+inset, 0, height-inset]) children();
-	translate([width/2-inset, 0, height-inset]) children();
+	translate([-width/2+inset, 0, height-(inset*f)]) children();
+	translate([width/2-inset, 0, height-(inset*f)]) children();
 }
 
-module sfx_cutout(thickness = 6, inset = 12, dimensions = sfx_dimensions) {
-	difference() {
-		color("grey") translate([0, 0.1, dimensions[2]/2]) rotate([90, 0, 0]) zcube([dimensions[0]-inset, dimensions[2]-inset, thickness+0.2]);
+module sfx_cutout(thickness = 6, dimensions = sfx_dimensions) {
+	render() difference() {
+		color("grey") translate([0, 0.1, dimensions[2]/2]) rotate([90, 0, 0]) zcube([dimensions[0]-10, dimensions[2]-6, thickness+0.2]);
 		
-		sfx_holes() rotate([90, 45, 0]) zcube([inset, inset, thickness*2], z=-thickness/2);
+		sfx_holes(inset=2, f=3) rotate([90, 360/16, 0]) translate([0, 0, -1]) cylinder(h=thickness+2, r=8, $fn = 8);
 	}
 	
 	sfx_holes() translate([0, 30-thickness, 0]) rotate([90, 0, 0]) hole(3, 30);
