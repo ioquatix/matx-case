@@ -195,22 +195,21 @@ module corner(dimensions = internal_size, thickness = 6) {
 	}
 }
 
-module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 9) {
+module corner_cutout(dimensions = internal_size, thickness = 6, panel_thickness = 6, panel_bolt_insert = 8) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
 		// Requires knurled insert M6x12x8
-		translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
-		translate([0, 0, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) knurled_hole(6, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
+		translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) knurled_hole(3, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
+		translate([0, 0, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) knurled_hole(3, panel_bolt_insert+panel_thickness, insert=panel_bolt_insert);
 		
 		bolt_length = thickness*2;
 		
-		bolt_size = 3;
 		inset = (thickness*1.5)/2;
 		vertical_offset = (dimensions[2]-inset*2);
 		
 		for (dz = [inset:vertical_offset:dimensions[2]]) {
 			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
-			translate([-thickness, -thickness-inset, dz]) rotate([0, 90, 0]) knurled_hole(bolt_size, bolt_length, insert=thickness);
-			translate([-thickness-inset, -thickness, dz]) rotate([-90, 0, 0]) knurled_hole(bolt_size, bolt_length, insert=thickness);
+			translate([-thickness, -thickness-inset, dz]) rotate([0, 90, 0]) knurled_hole(3, bolt_length, insert=thickness);
+			translate([-thickness-inset, -thickness, dz]) rotate([-90, 0, 0]) knurled_hole(3, bolt_length, insert=thickness);
 		}
 	}
 }
