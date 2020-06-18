@@ -25,13 +25,13 @@ module bay_holes(outset = 6, dimensions = bay_dimensions) {
 	}
 }
 
-module bay_cutout(thickness = 10, inset = 12, dimensions = bay_dimensions) {
+module bay_cutout(thickness = 6, inset = 12, insert=6, dimensions = bay_dimensions) {
 	color("grey")
 	translate([0, 0.1, 0])
 	zcube([dimensions[0], dimensions[1], thickness+0.2]);
 	
 	// The screw is M3, but we make the hole M4 so it won't hold a thread.
-	bay_holes() translate([0, 0, thickness-30]) hole(4, 30);
+	bay_holes() translate([0, 0, -insert]) knurled_hole(3, thickness+insert, insert=insert);
 }
 
 module bay_offset(x = 0, y = 0.5, dimensions = bay_dimensions) {

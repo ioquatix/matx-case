@@ -131,7 +131,7 @@ module ssd_cage_holes(dimensions = ssd_dimensions, insert=5) {
 }
 
 module ssd_cage_cutout(dimensions = ssd_dimensions, thickness=6, insert=4) {
-	ssd_cage_holes(insert=insert) # knurled_hole(3, thickness+insert, insert=insert);
+	ssd_cage_holes(insert=insert) knurled_hole(3, thickness+insert, insert=insert);
 }
 
 ssd_cage();
