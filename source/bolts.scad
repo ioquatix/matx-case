@@ -1,7 +1,7 @@
 
 $radial_error = 0.1;
 
-$fn = $preview ? 12 : 32;
+$fn = $preview ? 24 : 128;
 
 ISO262_COARSE_PITCH = [
 	[1.0, 0.25],

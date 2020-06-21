@@ -49,12 +49,13 @@ function pci_center_spacing() = inch(0.8);
 function pci_tab_gap() = 1; //inch(0.034);
 
 // The offset from datum A to the screw.
-function pci_screw_offset() = [inch(0.112) - inch(0.062), inch(2.525), 0];
+function pci_screw_offset() = [inch(0.112) - inch(0.062/2), inch(2.525), 0];
+function pci_screw_diameter() = inch(0.174);
 
 // The offset of the notch:
 function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)/2, inch(0.365) + 0.33, pci_tab_height()];
 // This is inset slightly from the spec:
-function pci_notch_size() = [2.5, inch(0.450 - 0.285)+0.6, pci_tab_gap()];
+function pci_notch_size() = [inch(0.550) - inch(0.430), inch(0.450 - 0.285)+0.6, pci_tab_gap()];
 
 module pci_card(offset = 0) {
 	// We translate the gtx card to the correct datum:
@@ -89,15 +90,27 @@ module pci_express_connectors(offset = 0) {
 }
 
 module pci_rear_bracket_screw() {
-	translate(pci_screw_offset()) translate([0, 0, -3]) threaded_hole(3, pci_tab_gap() + 3, 4);
+	translate(pci_screw_offset())
+	//translate([0, 0, -3])
+	children();
+	// threaded_hole(pci_screw_diameter(), pci_tab_gap() + 3, 4);
 }
 
-module pci_rear_bracket_top(outset = 6) {
+module pci_rear_bracket(outset = 6, bevel = 1) {
 	bottom = pci_tab_height();
 	top = bottom + 14;
 	size = top - bottom;
 	
-	color("purple") render() difference() {
+	// This is an alignment guide which uses the PCI datum for aligning the metal braket against the back of the case.
+	/* color("green") pci_express_datum() {
+		translate([0, pci_slot_back(), 0]) cube(pci_slot_spacing(), 10, 100);
+	}*/
+	
+	pci_express_datum(bottom) {
+		pci_rear_bracket_screw() cylinder_inner(6, pci_screw_diameter()/2);
+	}
+	
+	color("orange") render() difference() {
 		hull() pci_connectors() {
 			translate([pci_tab_offset(), outset, bottom]) {
 				rcube([pci_tab_spacing(), outset*2, 6], d=4);
@@ -105,22 +118,10 @@ module pci_rear_bracket_top(outset = 6) {
 			}
 		}
 		
-		/* hull() pci_connectors() {
-			translate([pci_tab_offset(), pci_tab_outset()/2-outset/2, bottom]) {
-				rcube([pci_tab_width(), (pci_tab_outset()+outset), pci_tab_gap()], d=3);
-			}
-		} */
-		
 		hull() pci_connectors() {
 			translate([pci_tab_offset(), outset, bottom]) {
-				zcube([pci_tab_width(), outset*2, pci_tab_gap()]);
-			}
-		}
-		
-		pci_express_datum(bottom) {
-			hull() {
-				pci_rear_bracket_screw();
-				translate([0, -outset, 0]) # pci_rear_bracket_screw();
+				rcube([pci_tab_spacing()-1, outset*2-1, 1], d=3);
+				translate([0, -outset/2, 0]) zcube([pci_tab_spacing()-1, outset, 1]);
 			}
 		}
 	}
@@ -132,61 +133,33 @@ module pci_rear_bracket_top(outset = 6) {
 	}
 }
 
-module pci_rear_bracket_bottom(outset = 6, bevel = 1) {
+module pci_rear_bracket_split(outset = 18) {
 	bottom = pci_tab_height();
 	top = bottom + 14;
 	size = top - bottom;
 	
-	// This is an alignment guide which uses the PCI datum for aligning the metal braket against the back of the case.
-	/* color("green") pci_express_datum() {
-		translate([0, pci_slot_back(), 0]) cube(pci_slot_spacing(), 10, 100);
-	}*/
-	
-	color("orange") render() difference() {
-		hull() pci_connectors() {
-			translate([pci_tab_offset(), outset, bottom-6]) {
-				rcube([pci_tab_spacing(), outset*2, 6], d=4);
-				translate([0, -outset/2, 3]) zcube([pci_tab_spacing(), outset, 3]);
-			}
-		}
-		
-		pci_connectors() {
-			translate([pci_tab_offset(), outset, bottom-6]) {
-				translate([0, -outset, 0]) zcube([pci_tab_spacing(), outset*2, 3]);
-			}
-		}
-		
-		pci_connectors() {
-			translate([pci_tab_offset() - pci_tab_spacing()/2 - 1, 0, bottom-bevel]) {
-				difference() {
-					translate([0, -bevel, 0]) cube([pci_tab_spacing()+2, bevel*2, bevel*2]);
-					translate([0, bevel, 0]) rotate([0, 90, 0]) cylinder(r=1, h=pci_tab_spacing()+2);
-				}
-			}
-		}
-		
-		pci_express_datum(bottom) {
-			pci_rear_bracket_screw();
-		}
-		
-		// This makes a space for the notch:
-		color("purple") pci_connectors(offset=0) {
-			translate(pci_notch_offset()) {
-				hull() {
-					translate([0, -2, 0]) zcube([3.1, 1, 2]);
-					translate([0, 5, -1.5]) zcube([12, 1, 2]);
-				}
-			}
+	hull() pci_connectors() {
+		translate([pci_tab_offset(), outset, bottom]) {
+			translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, 6]);
 		}
 	}
-	
-	color("purple") pci_connectors(offset=0) {
-		center = pci_notch_offset();
-		size = pci_notch_size();
-		
-		translate([center[0], outset*1.5, center[2]]) {
-			mirror([0, 0, 1]) zcube([size[0], outset, size[2]+2]);
-		}
+}
+
+module pci_rear_bracket_top() {
+	color("brown")
+	render()
+	difference() {
+		pci_rear_bracket();
+		pci_rear_bracket_split();
+	}
+}
+
+module pci_rear_bracket_bottom() {
+	color("green")
+	render()
+	intersection() {
+		pci_rear_bracket_split();
+		pci_rear_bracket();
 	}
 }
 
@@ -218,7 +191,7 @@ module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 	pci_connectors() {
 		// Main vertical cut-out:
 		translate([-width/2, 0, extension]) difference() {
-			cube([width, outset, 100+extension]);
+			cube([width, outset, 110+extension]);
 			
 			// This gives little corner cut-outs while allowing the bottom to be flush with the motherboard io cut-out which is not completely compliant with the PCI/ATX specification.
 			translate([width/2, 0, 0]) reflect() translate([width/4, 0, 0]) rotate([0, 45, 0]) cube([width, outset, width]);
@@ -234,7 +207,7 @@ module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 		}
 		
 		pci_connectors() {
-			translate([-pci_tab_spacing()/2+pci_tab_offset(), 0, bottom-3]) cube([pci_tab_spacing(), outset, 3]);
+			translate([-pci_tab_spacing()/2+pci_tab_offset(), 0, bottom]) cube([pci_tab_spacing(), outset, 1]);
 		}
 	}
 	

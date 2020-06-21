@@ -1,4 +1,4 @@
 
-use <../source/pci.scad>;
+include <../source/case.scad>;
 
 pci_rear_bracket_top();
