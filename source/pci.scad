@@ -50,12 +50,15 @@ function pci_tab_gap() = 1; //inch(0.034);
 
 // The offset from datum A to the screw.
 function pci_screw_offset() = [inch(0.112) - inch(0.062/2), inch(2.525), 0];
-function pci_screw_diameter() = inch(0.174);
+
+// In practice this seemed too big:
+//function pci_screw_diameter() = inch(0.174);
+function pci_screw_diameter() = inch(0.15);
 
 // The offset of the notch:
-function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)/2, inch(0.365) + 0.33, pci_tab_height()];
+function pci_notch_offset() = [inch(0.062)/2 - inch(0.675) + inch(0.550 + 0.430)/2, inch(0.365) + 0.33, pci_tab_height()-1];
 // This is inset slightly from the spec:
-function pci_notch_size() = [inch(0.550) - inch(0.430), inch(0.450 - 0.285)+0.6, pci_tab_gap()];
+function pci_notch_size() = [inch(0.550) - inch(0.430) - 0.8, inch(0.450 - 0.285) + 0.6, pci_tab_gap()+1];
 
 module pci_card(offset = 0) {
 	// We translate the gtx card to the correct datum:
@@ -139,8 +142,8 @@ module pci_rear_bracket_split(outset = 18) {
 	size = top - bottom;
 	
 	hull() pci_connectors() {
-		translate([pci_tab_offset(), outset, bottom]) {
-			translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, 6]);
+		translate([pci_tab_offset(), outset, bottom-6]) {
+			translate([0, -outset/2, 0]) zcube([pci_tab_spacing()+2, outset, 12]);
 		}
 	}
 }
@@ -152,28 +155,51 @@ module pci_rear_bracket_top() {
 		pci_rear_bracket();
 		pci_rear_bracket_split();
 	}
+	
+	bottom = pci_tab_height();
+	top = bottom + 14;
+	
+	difference() {
+		pci_connectors(index = 1) {
+			hull() {
+				translate([inch(0.4), -6, top+6]) rotate([-90, 0, 0]) zcube([6, 6, 6]);
+				translate([inch(0.4), -1, bottom+6+3]) rotate([-90, 0, 0]) zcube([6, 6, 1]);
+			}
+		}
+		
+		pci_rear_cutout();
+	}
 }
 
 module pci_rear_bracket_bottom() {
-	color("green")
-	render()
 	intersection() {
 		pci_rear_bracket_split();
 		pci_rear_bracket();
 	}
 }
 
-module pci_rear_slots(thickness = 6, gap = 1.2, height = 8) {
+module pci_rear_slots(thickness = 9, gap = 1.2, height = 9) {
 	color("purple") difference() {
-		difference() {
-			hull() pci_connectors() {
-				translate([2, -thickness/2, -atx_tray_offset()])
-				zcube([pci_slot_spacing()-6, thickness, height]);
+		union() {
+			difference() {
+				hull() pci_connectors() {
+					translate([2, -thickness/2, -atx_tray_offset()])
+					zcube([pci_slot_spacing()-6, thickness, height]);
+				}
+				
+				pci_connectors() {
+					translate([0, -thickness/2, -atx_tray_offset()]) 
+					translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
+				}
 			}
 			
-			pci_connectors() {
-				translate([0, -thickness/2, -atx_tray_offset()]) 
-				translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
+			pci_connectors(index=0, count=1)
+			hull() {
+				translate([16, -thickness/2, -atx_tray_offset()])
+				zcube([pci_slot_spacing()-6, thickness, height]);
+				
+				translate([16+155, -thickness/2, -atx_tray_offset()])
+				zcube([pci_slot_spacing()-6, thickness, height]);
 			}
 		}
 		
@@ -187,6 +213,10 @@ module atx_io_cutout() {
 	// #translate([inch(2.096-0.1), inch(0.483+0.05)-$tolerance, inch(-0.088-0.1)]) cube([inch(6.25+0.2), 20, inch(1.75+0.2)]);
 }
 
+module atx_io_clearance() {
+	translate([inch(2.096-0.1), 0, inch(-0.088-0.1)]) cube([inch(6.25+0.2), inch(0.483), inch(1.75+0.2)]);
+}
+
 module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 	pci_connectors() {
 		// Main vertical cut-out:
@@ -198,10 +228,10 @@ module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 		}
 	}
 	
+	bottom = pci_tab_height();
+	top = bottom + 14;
+	
 	hull() {
-		bottom = pci_tab_height();
-		top = bottom + 14;
-		
 		pci_connectors() {
 			translate([-pci_tab_spacing()/2+pci_tab_offset(), 0, bottom]) cube([pci_tab_spacing(), outset, top-bottom]);
 		}
@@ -213,7 +243,25 @@ module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
 	
 	pci_connectors(index = 1) {
 		// Bring the hole into alignment with the corner brackets.
-		translate([inch(0.4), -6, -12 + (9/2)]) rotate([-90, 0, 0]) knurled_hole(3, 12);
+		translate([inch(0.4), -6, -12 + (9/2)]) rotate([-90, 0, 0]) screw_hole(3, 12);
+	}
+	
+	pci_connectors(index = 1) {
+		// Bring the hole into alignment with the corner brackets.
+		translate([inch(0.4), -6, top+6]) rotate([-90, 0, 0]) screw_hole(3, 12);
+	}
+	
+	// The mounting screws under the ATX io cutout:
+	atx_io_clearance();
+	
+	// -12 is the motherboard offset - this should be a constant.
+	translate([inch(2.096), pci_back_offset(), -12]) {
+		translate([inch(6.25)*(3/4), -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
+		translate([inch(6.25)*(1/4), -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
+		
+		translate([0, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
+		translate([inch(6.25)/2, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
+		translate([inch(6.25), -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
 	}
 }
 

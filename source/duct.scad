@@ -27,7 +27,7 @@ module duct_tube(offset = 0, thickness = 6) {
 
 module duct_cutout(thickness = 6) {
 	translate([0, -116, 0]) {
-		reflect([0, 1, 0]) translate([0, duct_width/2 + 6, -thickness]) knurled_hole(3, 12, insert=6);
+		reflect([0, 1, 0]) translate([0, duct_width/2 + 6, -thickness]) threaded_hole(3, 12);
 		zcube([20, duct_width, thickness]);
 	}
 }

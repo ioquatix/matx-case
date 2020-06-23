@@ -60,7 +60,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 		}
 	}
 	
-	pci_rear_bracket_top();
+	//pci_rear_bracket_top();
 	pci_rear_bracket_bottom();
 }
 
@@ -68,18 +68,18 @@ module top_storage(dimensions) {
 	translate([dimensions[0]/2, 0, dimensions[2]/2]) rotate([0, 90, 0]) rotate([0, 0, 90]) children();
 }
 
-module wall_cutout(dimensions = internal_size, thickness = 6, panel_bolt_insert = 12) {
+module wall_cutout(dimensions = internal_size, thickness = 6, panel_bolt_insert = 12, tolerance = 0) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
 		cube([thickness, thickness, dimensions[2]]);
 		
 		// Bottom cutout:
-		zcube([12, 12, 9-$tolerance]);
-		translate([-15-$tolerance, -15-$tolerance, 0]) cube([15-$tolerance, 15-$tolerance, 9-$tolerance]);
+		zcube([12, 12, 9-tolerance]);
+		translate([-15-tolerance, -15-tolerance, 0]) cube([15-tolerance, 15-tolerance, 9-tolerance]);
 		
 		// Top cutout:
-		translate([0, 0, dimensions[2] - 9+$tolerance]) {
-			zcube([12, 12, 9-$tolerance]);
-			translate([-15-$tolerance, -15-$tolerance, 0]) cube([15-$tolerance, 15-$tolerance, 9-$tolerance]);
+		translate([0, 0, dimensions[2] - 9+tolerance]) {
+			zcube([12, 12, 9-tolerance]);
+			translate([-15-tolerance, -15-tolerance, 0]) cube([15-tolerance, 15-tolerance, 9-tolerance]);
 		}
 	}
 }
@@ -187,7 +187,7 @@ module case(dimensions = internal_size) {
 module corner(dimensions = internal_size, thickness = 6) {
 	render() intersection() {
 		difference() {
-			wall_cutout();
+			wall_cutout(tolerance=$tolerance);
 			rcube([dimensions[0]-thickness*1.5, dimensions[0]-thickness*1.5, dimensions[2]], d=thickness*4, $fn=4);
 		}
 		
@@ -221,16 +221,16 @@ module bolted_corner_cutout(dimensions = internal_size, thickness = 6) {
 
 module corner_cutout(dimensions = internal_size, thickness = 6, side_bolt_insert = 8, panel_bolt_insert = 8) {
 	translate([dimensions[0]/2, dimensions[1]/2, 0]) {
-		#translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) threaded_hole(3, panel_bolt_insert+thickness);
-		#translate([0, 0, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) threaded_hole(3, panel_bolt_insert+thickness);
+		translate([0, 0, panel_bolt_insert]) mirror([0, 0, 1]) rotate([0, 0, 45+90]) screw_hole(3, panel_bolt_insert+thickness);
+		translate([0, 0, dimensions[2]-panel_bolt_insert]) rotate([0, 0, 45+90]) screw_hole(3, panel_bolt_insert+thickness);
 		
 		inset = (thickness*1.5)/2;
 		vertical_offset = (dimensions[2]-inset*2);
 		
 		for (dz = [inset:vertical_offset:dimensions[2]]) {
 			// Requires knurled insert M3x8x5mm, flat M3x14mm scews.
-			#translate([-side_bolt_insert, -thickness-inset, dz]) rotate([0, 90, 0]) threaded_hole(3, side_bolt_insert+thickness);
-			#translate([-thickness-inset, -side_bolt_insert, dz]) rotate([-90, 0, 0]) threaded_hole(3, side_bolt_insert+thickness);
+			translate([-side_bolt_insert, -thickness-inset, dz]) rotate([0, 90, 0]) screw_hole(3, side_bolt_insert+thickness);
+			translate([-thickness-inset, -side_bolt_insert, dz]) rotate([-90, 0, 0]) screw_hole(3, side_bolt_insert+thickness);
 		}
 	}
 }
