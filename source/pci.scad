@@ -178,7 +178,7 @@ module pci_rear_bracket_bottom() {
 	}
 }
 
-module pci_rear_slots(thickness = 9, gap = 1.2, height = 9) {
+module pci_rear_slots(thickness = 9, gap = 1.2, slot = 12, height = 9) {
 	color("purple") difference() {
 		union() {
 			difference() {
@@ -188,8 +188,14 @@ module pci_rear_slots(thickness = 9, gap = 1.2, height = 9) {
 				}
 				
 				pci_connectors() {
-					translate([0, -thickness/2, -atx_tray_offset()]) 
-					translate([0, (thickness-gap)/2, 0]) zcube([12, gap, height]);
+					translate([0, -thickness/2, -atx_tray_offset()])
+					translate([0, (thickness-gap)/2, 0]) zcube([slot, gap, height]);
+					
+					translate([0, -thickness/2, -atx_tray_offset()+6])
+					translate([0, (thickness-gap)/2, 0]) hull() {
+						zcube([slot, gap, 3]);
+						translate([0, 0, 3]) zcube([14, gap*4, 3]);
+					}
 				}
 			}
 			

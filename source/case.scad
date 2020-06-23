@@ -176,7 +176,7 @@ module case(dimensions = internal_size) {
 		top_storage(dimensions) ssd_cage();
 	}
 	
-	sides(dimensions);
+	//sides(dimensions);
 	
 	render() difference() {
 		zcorners() corner();
