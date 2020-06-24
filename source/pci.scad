@@ -223,7 +223,7 @@ module atx_io_clearance() {
 	translate([inch(2.096-0.1), 0, inch(-0.088-0.1)]) cube([inch(6.25+0.2), inch(0.483), inch(1.75+0.2)]);
 }
 
-module pci_rear_cutout(width = 14, extension = inch(-0.088), outset = 20) {
+module pci_rear_cutout(width = 18, extension = inch(-0.088), outset = 20) {
 	pci_connectors() {
 		// Main vertical cut-out:
 		translate([-width/2, 0, extension]) difference() {
