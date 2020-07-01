@@ -1,5 +1,4 @@
 
 include <../source/case.scad>;
 
-render()
-pci_rear_bracket_top();
+pci_rear_cutout();

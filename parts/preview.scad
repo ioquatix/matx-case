@@ -1,12 +1,13 @@
 
 include <../source/case.scad>;
 
+size = internal_size + [18*2, 18*2, 0];
 panel = [1200, 600, 6];
-margin = [40, 40];
+margin = [4, 4];
 
 if ($preview) {
-	color("white")
-	translate([0, 0, -6])
+	color("black")
+	translate([0, 0, -6-1])
 	cube(panel);
 }
 
@@ -22,16 +23,16 @@ module wall_projection(index = 0) {
 	}
 }
 
-translate([margin[0] + internal_size[0]*0.5, margin[1]*2 + internal_size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(0);
+translate([margin[0] + internal_size[0]*0.5, margin[1]*2 + size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(0);
 
-translate([margin[0]*2 + internal_size[0]*1.5, margin[1]*2 + internal_size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(1);
+translate([margin[0]*2 + internal_size[0]*1.5, margin[1]*2 + size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(1);
 
-translate([margin[0]*3 + internal_size[0]*2.5, margin[1]*2 + internal_size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(2);
+translate([margin[0]*3 + internal_size[0]*2.5, margin[1]*2 + size[1]*1, 0]) rotate([0, 0, 90]) wall_projection(2);
 
-translate([margin[0]*3 + internal_size[0]*2, margin[1]*1 + internal_size[1]*0.5, 0]) rotate([0, 0, 0]) wall_projection(3);
-
-projection()
-translate([margin[0] + internal_size[0]*0.5, margin[1] + internal_size[1]*0.5, 0]) rotate([180, 0, 0]) bottom_panel();
+translate([margin[0]*3 + size[0]*2, margin[1]*1 + size[1]*0.5, 0]) rotate([0, 0, 0]) wall_projection(3);
 
 projection()
-translate([margin[0]*2 + internal_size[0]*1.5, margin[1] + internal_size[1]*0.5, -internal_size[2]]) top_panel();
+translate([margin[0] + size[0]*0.5, margin[1] + size[1]*0.5, 0]) rotate([180, 0, 0]) bottom_panel();
+
+projection()
+translate([margin[0]*2 + size[0]*1.5, margin[1] + size[1]*0.5, -size[2]]) top_panel();

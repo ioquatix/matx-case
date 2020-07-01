@@ -16,7 +16,7 @@ use <duct.scad>;
 
 function inch(x) = x * 25.4;
 
-// The case is 12mm larger from the internal size on each edge, so 340+12+12
+// The case is 12mm larger from the internal size on each edge, so 320+12+12
 internal_size = [320, 320, 148];
 
 module standoffs() {
@@ -60,7 +60,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 		}
 	}
 	
-	//pci_rear_bracket_top();
+	pci_rear_bracket_top();
 	pci_rear_bracket_bottom();
 }
 
@@ -236,15 +236,15 @@ module corner_cutout(dimensions = internal_size, thickness = 6, side_bolt_insert
 }
 
 module panel(dimensions = internal_size, thickness = 6) {
-	sx = dimensions[0]+(thickness*4);
-	sy = dimensions[1]+(thickness*4);
+	sx = dimensions[0]+(thickness*2)+12*2;
+	sy = dimensions[1]+(thickness*2)+12*2;
 	
 	difference() {
 		intersection() {
 			rcube([sx, sy, thickness], d=thickness*2, $fn=4);
 			
-			ix = dimensions[0]/2+thickness;
-			iy = dimensions[1]/2+thickness;
+			ix = dimensions[0]/2+thickness+6;
+			iy = dimensions[1]/2+thickness+6;
 			
 			zcorners() {
 				translate([ix, iy, thickness/2]) rotate([0, 0, 45]) cube([thickness*12, thickness*12, thickness], true);

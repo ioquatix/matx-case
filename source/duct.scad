@@ -12,7 +12,7 @@ height = 2;
 
 inset = 2;
 
-duct_width = 200;
+duct_width = 180;
 
 module duct_tube(offset = 0, thickness = 6) {
 	translate([0, -116, 0])

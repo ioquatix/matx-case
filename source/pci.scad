@@ -6,6 +6,11 @@ function inch(x) = x * 25.4;
 
 function pci_count() = 4;
 function atx_tray_offset() = 12;
+function atx_io_cutout_extension() = inch(0.088);
+
+// This is taken from the internal case height.
+function pci_wall_height() = 148;
+function pci_connector_top() = pci_wall_height() - atx_tray_offset();
 
 // This information is taken from the PCI Electromechanical Specification:
 function pci_bracket_width() = inch(0.725);
@@ -113,18 +118,43 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 		pci_rear_bracket_screw() cylinder_inner(6, pci_screw_diameter()/2);
 	}
 	
+	gap = 2;
+	
 	color("orange") render() difference() {
-		hull() pci_connectors() {
-			translate([pci_tab_offset(), outset, bottom]) {
-				rcube([pci_tab_spacing(), outset*2, 6], d=4);
-				translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, size]);
+		union() {
+			hull() pci_connectors() {
+				translate([pci_tab_offset(), outset, bottom]) {
+					rcube([pci_tab_spacing(), outset*2, 6], d=4);
+					translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, size]);
+				}
 			}
+			
+			pci_connectors() {
+				hull() {
+					translate([3, -gap/2, bottom-2]) zcube([inch(1), gap, size+4]);
+				}
+			}
+		}
+		
+		// Cut out gaps for the card PCBs.
+		pci_connectors() {
+			translate([7, -gap/2, bottom-2]) zcube([4, gap, 10]);
 		}
 		
 		hull() pci_connectors() {
 			translate([pci_tab_offset(), outset, bottom]) {
 				rcube([pci_tab_spacing()-1, outset*2-1, 1], d=3);
 				translate([0, -outset/2, 0]) zcube([pci_tab_spacing()-1, outset, 1]);
+			}
+			
+			translate([pci_tab_offset(), 0, bottom]) {
+				rotate([0, 90, 0])
+				translate([0, 0, -inch(0.4)+0.5]) {
+					cylinder(r=0.9, inch(0.8)-1);
+					
+					translate([5, 0, 0])
+					cylinder(r=0.9, inch(0.8)-1);
+				}
 			}
 		}
 	}
@@ -142,15 +172,14 @@ module pci_rear_bracket_split(outset = 18) {
 	size = top - bottom;
 	
 	hull() pci_connectors() {
-		translate([pci_tab_offset(), outset, bottom-6]) {
-			translate([0, -outset/2, 0]) zcube([pci_tab_spacing()+2, outset, 12]);
+		translate([pci_tab_offset(), outset-2, bottom-6]) {
+			translate([0, -outset/2, 0]) zcube([pci_tab_spacing()+8, outset, 12]);
 		}
 	}
 }
 
 module pci_rear_bracket_top() {
 	color("brown")
-	render()
 	difference() {
 		pci_rear_bracket();
 		pci_rear_bracket_split();
@@ -160,10 +189,10 @@ module pci_rear_bracket_top() {
 	top = bottom + 14;
 	
 	difference() {
-		pci_connectors(index = 1) {
+		pci_connectors(index = 0) {
 			hull() {
-				translate([inch(0.4), -6, top+6]) rotate([-90, 0, 0]) zcube([6, 6, 6]);
-				translate([inch(0.4), -1, bottom+6+3]) rotate([-90, 0, 0]) zcube([6, 6, 1]);
+				translate([inch(0.4), -6, pci_connector_top() - 9/2]) rotate([-90, 0, 0]) zcube([9, 9, 6]);
+				translate([inch(0.4), -2, bottom+6+3+1]) rotate([-90, 0, 0]) zcube([9, 4, 2]);
 			}
 		}
 		
@@ -172,6 +201,7 @@ module pci_rear_bracket_top() {
 }
 
 module pci_rear_bracket_bottom() {
+	color("blue")
 	intersection() {
 		pci_rear_bracket_split();
 		pci_rear_bracket();
@@ -223,11 +253,11 @@ module atx_io_clearance() {
 	translate([inch(2.096-0.1), 0, inch(-0.088-0.1)]) cube([inch(6.25+0.2), inch(0.483), inch(1.75+0.2)]);
 }
 
-module pci_rear_cutout(width = 18, extension = inch(-0.088), outset = 20) {
+module pci_rear_cutout(width = 18, outset = 20) {
 	pci_connectors() {
 		// Main vertical cut-out:
-		translate([-width/2, 0, extension]) difference() {
-			cube([width, outset, 110+extension]);
+		translate([-width/2, 0, -atx_io_cutout_extension()]) difference() {
+			cube([width, outset, 108]);
 			
 			// This gives little corner cut-outs while allowing the bottom to be flush with the motherboard io cut-out which is not completely compliant with the PCI/ATX specification.
 			translate([width/2, 0, 0]) reflect() translate([width/4, 0, 0]) rotate([0, 45, 0]) cube([width, outset, width]);
@@ -247,27 +277,37 @@ module pci_rear_cutout(width = 18, extension = inch(-0.088), outset = 20) {
 		}
 	}
 	
-	pci_connectors(index = 1) {
+	// Bottom screws for mounting support bar:
+	pci_connectors(index = 0) {
 		// Bring the hole into alignment with the corner brackets.
 		translate([inch(0.4), -6, -12 + (9/2)]) rotate([-90, 0, 0]) screw_hole(3, 12);
 	}
 	
-	pci_connectors(index = 1) {
+	// Top screws for mounting top bracket:
+	pci_connectors(index = 0) {
 		// Bring the hole into alignment with the corner brackets.
-		translate([inch(0.4), -6, top+6]) rotate([-90, 0, 0]) screw_hole(3, 12);
+		translate([inch(0.4), -6, pci_connector_top() - 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
+	}
+	
+	// Holes for mounting the cut outs:
+	pci_connectors() {
+		// Bring the hole into alignment with the corner brackets.
+		translate([0, 0, -atx_io_cutout_extension()]) {
+			rotate([-90, 0, 0]) threaded_hole(3, 6);
+			translate([0, 0, 108]) rotate([-90, 0, 0]) threaded_hole(3, 6);
+		}
 	}
 	
 	// The mounting screws under the ATX io cutout:
 	atx_io_clearance();
 	
-	// -12 is the motherboard offset - this should be a constant.
-	translate([inch(2.096), pci_back_offset(), -12]) {
-		translate([inch(6.25)*(3/4), -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
-		translate([inch(6.25)*(1/4), -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
+	translate([inch(2.096) + inch(6.25/2), pci_back_offset(), -atx_tray_offset()]) {
+		translate([150/4, -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
+		translate([-150/4, -6, 9/2]) rotate([-90, 0, 0]) screw_hole(3, 12);
 		
 		translate([0, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
-		translate([inch(6.25)/2, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
-		translate([inch(6.25), -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
+		translate([-150/2, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
+		translate([150/2, -9/2, -6]) countersunk_screw_hole(3, 12, inset=4, thickness=6);
 	}
 }
 
