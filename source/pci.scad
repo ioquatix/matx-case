@@ -115,17 +115,18 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 	}*/
 	
 	pci_express_datum(bottom) {
-		pci_rear_bracket_screw() cylinder_inner(6, pci_screw_diameter()/2);
+		pci_rear_bracket_screw() cylinder_inner(6, (pci_screw_diameter()/2) * 0.8);
 	}
 	
-	gap = 2;
+	gap = 4;
 	
 	color("orange") render() difference() {
 		union() {
 			hull() pci_connectors() {
 				translate([pci_tab_offset(), outset, bottom]) {
 					rcube([pci_tab_spacing(), outset*2, 6], d=4);
-					translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, size]);
+					// We take a little bit off the top so that it fits more easily:
+					translate([0, -outset/2, 0]) zcube([pci_tab_spacing(), outset, size-0.4]);
 				}
 			}
 			
@@ -138,7 +139,7 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 		
 		// Cut out gaps for the card PCBs.
 		pci_connectors() {
-			translate([7, -gap/2, bottom-2]) zcube([4, gap, 10]);
+			translate([8, -gap/2, bottom-2]) zcube([4, gap, 10]);
 		}
 		
 		hull() pci_connectors() {
@@ -149,11 +150,11 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 			
 			translate([pci_tab_offset(), 0, bottom]) {
 				rotate([0, 90, 0])
-				translate([0, 0, -inch(0.4)+0.5]) {
-					cylinder(r=0.9, inch(0.8)-1);
+				translate([0, -0.5, -inch(0.4)+0.5]) {
+					cylinder(r=1, inch(0.8)-1);
 					
 					translate([5, 0, 0])
-					cylinder(r=0.9, inch(0.8)-1);
+					cylinder(r=1, inch(0.8)-1);
 				}
 			}
 		}
@@ -172,7 +173,7 @@ module pci_rear_bracket_split(outset = 18) {
 	size = top - bottom;
 	
 	hull() pci_connectors() {
-		translate([pci_tab_offset(), outset-2, bottom-6]) {
+		translate([pci_tab_offset(), outset-5, bottom-6]) {
 			translate([0, -outset/2, 0]) zcube([pci_tab_spacing()+8, outset, 12]);
 		}
 	}
