@@ -44,3 +44,5 @@ module duct() {
 		}
 	}
 }
+
+duct();

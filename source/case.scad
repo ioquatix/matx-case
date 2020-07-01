@@ -174,6 +174,7 @@ module case(dimensions = internal_size) {
 		front_fan(dimensions) fan();
 		// top_fan(dimensions) fan();
 		top_storage(dimensions) ssd_cage();
+		top_controls(dimensions) bay();
 	}
 	
 	sides(dimensions);
