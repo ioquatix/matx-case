@@ -314,9 +314,11 @@ module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
 		zcorners() corner_cutout(dimensions);
 		
 		bottom_tray(dimensions, 0) {
-			difference() {
-				standoffs() standoff_hole();
-			}
+			standoffs() standoff_hole();
+		}
+		
+		#bottom_tray(dimensions) {
+			pci_rear_cutout();
 		}
 	}
 }
