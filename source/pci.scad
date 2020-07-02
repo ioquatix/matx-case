@@ -118,7 +118,7 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 		pci_rear_bracket_screw() cylinder_inner(6, (pci_screw_diameter()/2) * 0.8);
 	}
 	
-	gap = 4;
+	gap = 2.5;
 	
 	color("orange") render() difference() {
 		union() {
@@ -139,7 +139,7 @@ module pci_rear_bracket(outset = 6, bevel = 1) {
 		
 		// Cut out gaps for the card PCBs.
 		pci_connectors() {
-			translate([8, -gap/2, bottom-2]) zcube([4, gap, 10]);
+			translate([6, -gap/2, bottom-2]) zcube([8, gap, 10]);
 		}
 		
 		hull() pci_connectors() {
@@ -209,37 +209,39 @@ module pci_rear_bracket_bottom() {
 	}
 }
 
+module pci_rear_slots_cutout(thickness = 9, gap = 1.2, slot = 12, height = 9) {
+	pci_connectors() {
+		translate([0, -thickness/2, -atx_tray_offset()])
+		translate([0, (thickness-gap)/2, 0]) zcube([slot, gap, height]);
+		
+		translate([0, -thickness/2, -atx_tray_offset()+6])
+		translate([0, (thickness-gap)/2, 0]) hull() {
+			zcube([slot, gap, 3]);
+			translate([0, 0, 3]) zcube([14, gap*4, 3]);
+		}
+	}
+}
+
 module pci_rear_slots(thickness = 9, gap = 1.2, slot = 12, height = 9) {
 	color("purple") difference() {
 		union() {
-			difference() {
-				hull() pci_connectors() {
-					translate([2, -thickness/2, -atx_tray_offset()])
-					zcube([pci_slot_spacing()-6, thickness, height]);
-				}
-				
-				pci_connectors() {
-					translate([0, -thickness/2, -atx_tray_offset()])
-					translate([0, (thickness-gap)/2, 0]) zcube([slot, gap, height]);
-					
-					translate([0, -thickness/2, -atx_tray_offset()+6])
-					translate([0, (thickness-gap)/2, 0]) hull() {
-						zcube([slot, gap, 3]);
-						translate([0, 0, 3]) zcube([14, gap*4, 3]);
-					}
-				}
-			}
-			
-			pci_connectors(index=0, count=1)
-			hull() {
-				translate([16, -thickness/2, -atx_tray_offset()])
-				zcube([pci_slot_spacing()-6, thickness, height]);
-				
-				translate([16+155, -thickness/2, -atx_tray_offset()])
-				zcube([pci_slot_spacing()-6, thickness, height]);
+			hull() pci_connectors(index=1) {
+				translate([pci_slot_spacing()/2, -thickness/2, -atx_tray_offset()])
+				zcube([pci_slot_spacing()*3/2, thickness, height]);
 			}
 		}
 		
+		pci_rear_slots_cutout();
+		pci_rear_cutout();
+	}
+}
+
+module atx_io_support(thickness = 9, gap = 1.2, slot = 12, height = 9) {
+	color("blue") difference() {
+		translate([inch(2.096)-8, pci_back_offset()-9, -12])
+		cube([inch(6.25)+8+inch(0.1), 9, 9]);
+		
+		pci_rear_slots_cutout();
 		pci_rear_cutout();
 	}
 }

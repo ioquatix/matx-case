@@ -124,14 +124,16 @@ module ssd_cage(dimensions = ssd_dimensions, height=12, bays = 2) {
 	}
 }
 
-module ssd_cage_holes(dimensions = ssd_dimensions, insert=5) {
+module ssd_cage_holes(dimensions = ssd_dimensions) {
 	zcorners()
-	translate([dimensions[0]/2, dimensions[1]/2 - 6, -insert])
+	translate([dimensions[0]/2, dimensions[1]/2 - 6, 0])
 	children();
 }
 
-module ssd_cage_cutout(dimensions = ssd_dimensions, thickness=6, insert=4) {
-	ssd_cage_holes(insert=insert) knurled_hole(3, thickness+insert, insert=insert);
+module ssd_cage_cutout(dimensions = ssd_dimensions, thickness=6) {
+	ssd_cage_holes()
+	translate([0, 0, -6])
+	screw_hole(3, 12);
 }
 
 ssd_cage();

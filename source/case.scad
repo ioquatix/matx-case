@@ -165,6 +165,7 @@ module case(dimensions = internal_size) {
 		if ($preview) {
 			motherboard();
 			pci_rear_slots();
+			atx_io_support();
 		}
 	}
 	

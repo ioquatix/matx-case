@@ -29,9 +29,15 @@ ISO262_COARSE_PITCH = [
 
 function screw_pitch(d) = lookup(d, ISO262_COARSE_PITCH);
 
+function fudge_factor(fn=$fn) = 1/cos(180/fn);
+function outer_radius(radius, fn=$fn, radial_error=$radial_error) = radius*fudge_factor(fn)+radial_error;
+
+module sphere_outer(radius, fn=$fn, radial_error=$radial_error) {
+	sphere(r=radius*fudge_factor(fn)+radial_error, $fn=fn);
+}
+
 module cylinder_outer(height, radius, fn=$fn, radial_error=$radial_error) {
-	fudge = 1/cos(180/fn);
-	cylinder(h=height,r=radius*fudge+radial_error, $fn=fn);
+	cylinder(h=height,r=radius*fudge_factor(fn)+radial_error, $fn=fn);
 }
 
 module cylinder_inner(height, radius, fn=$fn, radial_error=$radial_error) {
