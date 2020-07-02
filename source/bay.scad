@@ -50,6 +50,10 @@ module bay(dimensions = bay_dimensions, thickness=6, tolerance=0.1) {
 			}
 		}
 		
+		translate([0, 8, -18])
+		rotate([-61, 0, 0])
+		bay_usb_cutout();
+		
 		bay_screws(thickness);
 	}
 	
@@ -73,25 +77,31 @@ module bay_holes(outset = 6, dimensions = bay_dimensions) {
 
 module bay_usb_cutout() {
 	difference() {
-		union() {
-			zcube([75, 21, 1.6]);
-			
-			translate([0, -21/2, 1.6 + 7/2])
-			rotate([90, 0, 0])
-			reflect() {
-				translate([14/2, 0.8, -21/2])
-				cylinder(d=6, h=21/2+4);
-				
-				translate([46/2, 0, -21/2])
-				rcube([14.5, 7, 21/2+4]);
-			}
-		}
+		zcube([75, 21, 1.6]);
 		
 		// PCB:
 		reflect()
 		translate([69.8/2, 21/2 - 6, 1.6 - 6])
-		screw_hole(3, 6, thickness=1.6, inset=4);
+		hole(3.2, 6);
 	}
+	
+	zcube([66, 21, 1.6], f=-1);
+	zcube([66, 21, 11.1]);
+	
+	translate([0, -21/2, 1.6 + 7/2])
+	rotate([90, 0, 0])
+	reflect() {
+		translate([14/2, 0.8, -21/2])
+		cylinder(d=6, h=21/2+4);
+		
+		translate([46/2, 0, -21/2])
+		rcube([14.5, 7, 21/2+4]);
+	}
+	
+	// PCB:
+	reflect()
+	translate([69.8/2, 21/2 - 6, 1.6 - 6])
+	#screw_hole(3, 6, thickness=1.6, inset=4);
 }
 
 module button_cutout(dimensions = button_dimensions, tolerance = 0.0, offset = 3) {
