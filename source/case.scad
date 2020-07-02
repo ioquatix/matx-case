@@ -298,14 +298,14 @@ module cable_clamps_front(dimensions = internal_size) {
 }
 
 module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
-	if ($preview) {
+	/* if ($preview) {
 		cable_clamps_top(dimensions) cable_clamp(48);
 		cable_clamps_front(dimensions) cable_clamp(30);
 		
 		bottom_tray(dimensions, 0) {
 			standoffs() standoff();
 		}
-	}
+	} */
 	
 	render() difference() {
 		translate([0, 0, -thickness]) panel(dimensions, thickness);

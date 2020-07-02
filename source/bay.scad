@@ -4,14 +4,30 @@ use <zcube.scad>;
 
 bay_dimensions = [100+10, 50+10, 40];
 button_dimensions = [36, 12];
+button_offset = bay_dimensions[1]/2 - (button_dimensions[1]+2)/2;
 
-module bay(dimensions = bay_dimensions, thickness=6, tolerance=0.1) {
-	button_offset = dimensions[1]/2 - (button_dimensions[1]+2)/2;
-	
+module bay_interior_cutout(thickness = 6) {
+	union() {
+		hull() {
+			half_button = button_dimensions[1]+2;
+			
+			translate([0, 0, 6])
+			zcube([bay_dimensions[0], bay_dimensions[1]-half_button, thickness*8]);
+			
+			translate([0, -bay_dimensions[1]/4, 6])
+			zcube([bay_dimensions[0], bay_dimensions[1]/2, thickness], f=-1);
+			
+			translate([0, -bay_dimensions[1]/4, -10])
+			zcube([bay_dimensions[0], bay_dimensions[1]/4, thickness/2]);
+		}
+	}
+}
+
+module bay(thickness=6, tolerance=0.1) {
 	difference() {
 		union() {
-			zcube([dimensions[0]-tolerance*2, dimensions[1]-tolerance*2, thickness]);
-			zcube([dimensions[0]+12*2, dimensions[1]+12, thickness*2], f=-1);
+			zcube([bay_dimensions[0]-tolerance*2, bay_dimensions[1]-tolerance*2, thickness]);
+			zcube([bay_dimensions[0]+12*2, bay_dimensions[1]+6, thickness*2], f=-1);
 		}
 		
 		// Avoids unprintable curves around back of button:
@@ -35,24 +51,16 @@ module bay(dimensions = bay_dimensions, thickness=6, tolerance=0.1) {
 			}
 		}
 		
-		union() {
-			hull() {
-				half_button = button_dimensions[1]+2;
-				
-				translate([0, 0, 6])
-				zcube([dimensions[0], dimensions[1]-half_button, thickness*8]);
-				
-				translate([0, -dimensions[1]/4, 6])
-				zcube([dimensions[0], dimensions[1]/2, thickness], f=-1);
-				
-				translate([0, -dimensions[1]/4, -10])
-				zcube([dimensions[0], dimensions[1]/4, thickness/2]);
-			}
-		}
+		bay_interior_cutout();
 		
 		translate([0, 8, -18])
 		rotate([-61, 0, 0])
 		bay_usb_cutout();
+		
+		reflect()
+		mirror([0, 0, 1])
+		translate([78/2, 5.5, 6])
+		# threaded_hole(3, 6);
 		
 		bay_screws(thickness);
 	}
@@ -62,6 +70,20 @@ module bay(dimensions = bay_dimensions, thickness=6, tolerance=0.1) {
 			button();
 			switch_cutout();
 		}
+		
+		translate([0, 8, -18])
+		rotate([-61, 0, 0])
+		bay_usb_pcb();
+	}
+}
+
+module bay_button() {
+	difference() {
+		translate([0, button_offset, -9-3]) {
+			button();
+		}
+		
+		bay_interior_cutout();
 	}
 }
 
@@ -75,33 +97,57 @@ module bay_holes(outset = 6, dimensions = bay_dimensions) {
 	}
 }
 
+module bay_usb_pcb() {
+	render()
+	difference() {
+		zcube([75, 21, 1.6]);
+		reflect() {
+			translate([75/2, -6/2, 0])
+			zcube([4, 6, 1.6]);
+		}
+		
+		// PCB:
+		reflect()
+		translate([69.8/2, 21/2 - 6, 1.6 - 6])
+		screw_hole(3, 6, thickness=1.6, inset=4);
+	}
+	
+	color("white")
+	translate([0, 0, 1.6 + 7/2])
+	rotate([90, 0, 0])
+	reflect() {
+		translate([14/2, 0.8, -21/2]) {
+			cylinder(d=6, h=21+4);
+			rcube([12, 11.1-1.6, 21]);
+		}
+		
+		translate([46/2, 0, -21/2])
+		rcube([14.5, 7, 21+4]);
+	}
+}
+
 module bay_usb_cutout() {
 	difference() {
 		zcube([75, 21, 1.6]);
 		
 		// PCB:
 		reflect()
-		translate([69.8/2, 21/2 - 6, 1.6 - 6])
+		translate([70/2, 21/2 - 6, 1.6 - 6])
 		hole(3.2, 6);
 	}
 	
 	zcube([66, 21, 1.6], f=-1);
 	zcube([66, 21, 11.1]);
 	
-	translate([0, -21/2, 1.6 + 7/2])
+	translate([0, 0, 1.6 + 7/2])
 	rotate([90, 0, 0])
 	reflect() {
 		translate([14/2, 0.8, -21/2])
-		cylinder(d=6, h=21/2+4);
+		cylinder(d=6+1, h=21+5);
 		
 		translate([46/2, 0, -21/2])
-		rcube([14.5, 7, 21/2+4]);
+		rcube([14.5+1, 7+1, 21+5]);
 	}
-	
-	// PCB:
-	reflect()
-	translate([69.8/2, 21/2 - 6, 1.6 - 6])
-	#screw_hole(3, 6, thickness=1.6, inset=4);
 }
 
 module button_cutout(dimensions = button_dimensions, tolerance = 0.0, offset = 3) {
@@ -114,18 +160,19 @@ module button(dimensions = button_dimensions, tolerance = 0.0) {
 	render()
 	difference() {
 		button_cutout(dimensions, tolerance, 0);
+		switch_cutout();
 	}
 }
 
 module switch_cutout() {
 	color("black") {
-		zcube([9, 9, 9]);
+		zcube([8.5, 8.5, 9]);
 		zcube([3, 2, 9+6]);
 	}
 	
 	mirror([0, 0, 1])
 	translate([0, 6.5, -6])
-	# threaded_hole(3, 6);
+	threaded_hole(3, 6);
 }
 
 module bay_screws(thickness = 6) {
