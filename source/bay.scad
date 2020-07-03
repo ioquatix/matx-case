@@ -3,13 +3,14 @@ use <bolts.scad>;
 use <zcube.scad>;
 
 bay_dimensions = [100+10, 50+10, 40];
-button_dimensions = [36, 12];
-button_offset = bay_dimensions[1]/2 - (button_dimensions[1]+2)/2;
+button_clearance = 0.4;
+button_dimensions = [38-(button_clearance*2), 14-(button_clearance*2)];
+button_offset = bay_dimensions[1]/2 - (button_dimensions[1]+(button_clearance*2))/2;
 
 module bay_interior_cutout(thickness = 6) {
 	union() {
 		hull() {
-			half_button = button_dimensions[1]+2;
+			half_button = button_dimensions[1]+(button_clearance*2);
 			
 			translate([0, 0, 6])
 			zcube([bay_dimensions[0], bay_dimensions[1]-half_button, thickness*8]);
@@ -19,6 +20,19 @@ module bay_interior_cutout(thickness = 6) {
 			
 			translate([0, -bay_dimensions[1]/4, -10])
 			zcube([bay_dimensions[0], bay_dimensions[1]/4, thickness/2]);
+		}
+	}
+}
+
+module bay_led_cutout(tolerance = 0) {
+	#reflect() {
+		translate([12, 0, 0]) {
+			hull() {
+				cylinder_outer(5, 5/2+tolerance);
+				translate([0, 0, 8-5/2+tolerance]) sphere_outer(5/2);
+				
+				cylinder_outer(10, 5/2);
+			}
 		}
 	}
 }
@@ -39,16 +53,7 @@ module bay(thickness=6, tolerance=0.1) {
 			
 			switch_cutout();
 			
-			reflect() {
-				translate([12, 0, 0]) {
-					hull() {
-						cylinder_outer(5, 5/2);
-						translate([0, 0, 8-5/2]) sphere_outer(5/2);
-						
-						cylinder_outer(10, 5/2);
-					}
-				}
-			}
+			bay_led_cutout();
 		}
 		
 		bay_interior_cutout();
@@ -66,8 +71,9 @@ module bay(thickness=6, tolerance=0.1) {
 	}
 	
 	if ($preview) {
+		bay_button();
+		
 		translate([0, button_offset, -9-3]) {
-			button();
 			switch_cutout();
 		}
 		
@@ -78,9 +84,13 @@ module bay(thickness=6, tolerance=0.1) {
 }
 
 module bay_button() {
+	color("white")
+	render()
 	difference() {
 		translate([0, button_offset, -9-3]) {
-			button();
+			difference() {
+				button();
+			}
 		}
 		
 		bay_interior_cutout();
@@ -150,24 +160,31 @@ module bay_usb_cutout() {
 	}
 }
 
-module button_cutout(dimensions = button_dimensions, tolerance = 0.0, offset = 3) {
-	translate([0, 0, 9+3-offset-tolerance])
-	rcube([dimensions[0]+tolerance*2, dimensions[1]+tolerance*2, (6+offset)+tolerance*2]);
+module button_cutout(dimensions = button_dimensions, tolerance = 0.0) {
+	bottom = 11;
+	top = 11+7;
+	height = top - bottom;
+	
+	translate([0, 0, bottom])
+	rcube([dimensions[0]+tolerance*2, dimensions[1]+tolerance*2, height]);
 }
 
 module button(dimensions = button_dimensions, tolerance = 0.0) {
 	color("white")
 	render()
 	difference() {
-		button_cutout(dimensions, tolerance, 0);
-		switch_cutout();
+		button_cutout(dimensions, tolerance);
+		switch_cutout(tolerance = 0.1);
 	}
+	
+	// switch_cutout(tolerance = 0.1);
 }
 
-module switch_cutout() {
+module switch_cutout(tolerance = 0) {
 	color("black") {
-		zcube([8.5, 8.5, 9]);
-		zcube([3, 2, 9+6]);
+		zcube([8.5+tolerance*2, 8.5+tolerance*2, 9]);
+		zcube([4, 4, 11]);
+		zcube([3+tolerance*2, 2+tolerance*2, 13.7]);
 	}
 	
 	mirror([0, 0, 1])
