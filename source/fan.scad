@@ -64,6 +64,20 @@ module fan_cutout(diameter = 140, thickness = 6, inset = 2, spacing = 124.5) {
 	}
 }
 
+// This is a bracket for spacing a filter 2mm away from the fan itself to prevent the fan blades hitting the filter. In practice, 1mm thick seems sufficient, but is not very strong or as easy to print.
+module fan_bracket(diameter = 140, thickness = 2, inset = 1) {
+	render()
+	difference() {
+		rcube([diameter, diameter, thickness], d=10, f=1);
+		
+		cylinder(d=diameter-inset*2, h=thickness);
+		
+		fan_holes(diameter) translate([0, 0, -35]) hole(5, 35);
+	}
+}
+
 //color("brown") fan();
 //#fan_holes() translate([0, 0, -35]) hole(3, 35);
-fan_cutout(80);
+
+// fan_cutout(80);
+fan_bracket();
