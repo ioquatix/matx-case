@@ -17,7 +17,7 @@ use <duct.scad>;
 function inch(x) = x * 25.4;
 
 // The case is 12mm larger from the internal size on each edge, so 320+12+12
-internal_size = [320, 320, 148];
+internal_size = [380, 380, 148];
 
 module standoffs() {
 	// DATUM B as per the microATX specification is the origin.
@@ -40,7 +40,7 @@ module standoffs() {
 
 module motherboard(thickness = pci_motherboard_thickness()) {
 	color("green") render() difference() {
-		translate([inch(-1.35), inch(0.4-9.6), 0]) cube([inch(9.6), inch(9.6), thickness]);
+		translate([inch(-1.35 - 2.4), inch(0.4-9.6), 0]) cube([inch(12), inch(9.6), thickness]);
 		standoffs() cylinder(d=4, h=10, $fn=8);
 	}
 	
@@ -159,7 +159,7 @@ module back_fans(dimensions) {
 }
 
 module bottom_tray(dimensions, offset = atx_tray_offset()) {
-	translate([inch(-9.6/2)+3.5, dimensions[1]/2-pci_back_offset(), offset]) children();
+	translate([inch(-(9.6)/2 + (2.4/2)) + 3.5, dimensions[1]/2-pci_back_offset(), offset]) children();
 }
 
 module case(dimensions = internal_size) {

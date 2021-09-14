@@ -4,7 +4,7 @@ use <bolts.scad>;
 
 function inch(x) = x * 25.4;
 
-function pci_count() = 4;
+function pci_count() = 7;
 function atx_tray_offset() = 12;
 function atx_io_cutout_extension() = inch(0.088);
 
@@ -69,7 +69,10 @@ module pci_card(offset = 0) {
 	// We translate the gtx card to the correct datum:
 	//-7 + 3.65/2 + 8.25 - 4.85 - 7.25
 	// This seems to be short by 0.128 on the Z axis?
-	translate([1.6/2, 8/2 + 3.65 + 12.15, 3.1-8.25-3.85+offset]) rotate([90, 0, -90]) import("gtx.stl", convexity=4);
+	/* translate([1.6/2, 8/2 + 3.65 + 12.15, 3.1-8.25-3.85+offset]) rotate([90, 0, -90]) import("gtx.stl", convexity=4); */
+	
+	translate([-15, -100, 0])
+	#zcube([61, 335, 140]);
 }
 
 module pci_connectors(inset = pci_back_offset(), offset = pci_center_from_datum(), index = 0, count = pci_count()) {
