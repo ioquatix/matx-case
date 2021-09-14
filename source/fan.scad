@@ -21,8 +21,16 @@ SPACING = [
 
 function screw_spacing(d) = lookup(d, SPACING);
 
-module fan_d9l() {
-	zcube([95, 95, 110]);
+module fan_nh_u9s() {
+	zcube([95, 95, 125]);
+}
+
+module fan_nh_d15s() {
+	zcube([150, 160, 160]);
+}
+
+module fan_nh_c14s() {
+	zcube([140, 163, 115]);
 }
 
 module fan(diameter = 140, thickness = 25) {

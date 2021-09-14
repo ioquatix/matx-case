@@ -46,8 +46,10 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 	
 	// A very rough approximation of where the CPU is likely to be.
 	translate([inch(5), inch(-4.5), thickness]) color("silver") {
-		zcube([inch(3), inch(2.5), 10]);
-		translate([0, 0, 10]) fan_d9l();
+		zcube([inch(3), inch(2.5), 7.35]);
+		translate([0, 0, 7.35]) fan_nh_u9s();
+		/* translate([0, 0, 7.35]) fan_nh_c14s(); */
+		/* translate([0, 0, 7.35]) fan_nh_d15s(); */
 	}
 	
 	// Origin the surface of the PCB.
