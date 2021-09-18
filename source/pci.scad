@@ -293,13 +293,13 @@ module pci_rear_cutout(width = 18, outset = 20) {
 	}
 	
 	// Holes for mounting the cut outs:
-	pci_connectors() {
+	/* pci_connectors() {
 		// Bring the hole into alignment with the corner brackets.
 		translate([0, 0, -atx_io_cutout_extension()]) {
 			rotate([-90, 0, 0]) threaded_hole(3, 6);
 			translate([0, 0, 108]) rotate([-90, 0, 0]) threaded_hole(3, 6);
 		}
-	}
+	} */
 	
 	// The mounting screws under the ATX io cutout:
 	atx_io_clearance();

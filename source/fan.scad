@@ -72,6 +72,46 @@ module fan_cutout(diameter = 140, thickness = 6, inset = 2, spacing = 124.5) {
 	}
 }
 
+function distance(x, y) = sqrt(x*x+y*y);
+function hex_x(step_x, size) = step_x * sqrt(3) * size;
+function hex_y(step_x, step_y, size) = step_y * 2 * size + (step_x % 2) * size;
+
+module fan_cutout_hex(diameter = 140, thickness = 6, inset = 0, extra = []) {
+	center = (70+2.25)*2;
+	size = (center / 8) / sqrt(3);
+	
+	steps = ceil(diameter / size / 2) + 2;
+	
+	render()
+	intersection() {
+		cylinder($fn=32, r=diameter/2, h=thickness);
+		
+		for (step_x = [-steps:steps]) {
+			x = hex_x(step_x, size);
+			
+			for (step_y = [-steps:steps]) {
+				y = hex_y(step_x, step_y, size);
+				
+				if (!(x == 0 && y == 0) && distance(x, y) < (diameter/2 + size)) {
+					translate([x, y, 0])
+					cylinder_outer(thickness, size - 2, 6);
+				}
+			}
+		}
+	}
+	
+	for (coordinate = extra) {
+		x = hex_x(coordinate[0], size);
+		y = hex_y(coordinate[0], coordinate[1], size);
+		
+		translate([x, y, 0])
+		cylinder_outer(thickness, size - 2, 6);
+	}
+	
+	// The "standard hole" is inch(7/32) = 5.5mm, but most cases use M5 holes and as the heads of the screws OD=6mm, we prefer OD=5mm for the hole... better to be a little bit tight than a little bit loose... considering the accuracy of laser cutters can be around 0.3mm.
+	fan_holes(diameter) translate([0, 0, -35]) hole(5, 35);
+}
+
 // This is a bracket for spacing a filter 2mm away from the fan itself to prevent the fan blades hitting the filter. In practice, 1mm thick seems sufficient, but is not very strong or as easy to print.
 module fan_bracket(diameter = 140, thickness = 2, inset = 1) {
 	render()
@@ -87,5 +127,10 @@ module fan_bracket(diameter = 140, thickness = 2, inset = 1) {
 //color("brown") fan();
 //#fan_holes() translate([0, 0, -35]) hole(3, 35);
 
-// fan_cutout(80);
-fan_bracket();
+fan_cutout_hex(80, extra=[
+	[-1, 2], [0, 2], [1, 1],
+	[-1, 2+1], [0, 2+1], [1, 1+1],
+	[-1, -1], [0, -2], [1, -2],
+	[-1, -1-1], [0, -2-1], [1, -2-1],
+]);
+//fan_bracket();

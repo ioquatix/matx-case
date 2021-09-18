@@ -10,6 +10,7 @@ sfx_dimensions = [125, 100, 63.5];
 //sfx_dimensions = [150, 140, 86];
 
 module sfx(dimensions = sfx_dimensions) {
+	render()
 	difference() {
 		color("grey") translate([-dimensions[0]/2, 0, 0]) cube(dimensions);
 		sfx_holes() rotate(90, [1, 0, 0]) hole(3, 10);

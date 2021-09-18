@@ -54,7 +54,7 @@ module motherboard(thickness = pci_motherboard_thickness()) {
 	
 	// Origin the surface of the PCB.
 	translate([0, 0, thickness]) {
-		//color("brown") pci_express_datum(index = 2, count = 3) pci_card();
+		/* color("brown") pci_express_datum(index = 2, count = 3) pci_card(); */
 		color("brown") pci_express_datum(index = 0, count = 1) pci_card();
 		
 		color("grey") {
@@ -100,11 +100,16 @@ module sides(dimensions = internal_size, thickness = 6) {
 		walls();
 		
 		top_controls(dimensions) bay_cutout();
-		front_fan(dimensions) fan_cutout();
+		front_fan(dimensions) fan_cutout_hex();
 		// top_fan(dimensions) fan_cutout();
 		
 		back_power_supply(dimensions) sfx_cutout();
-		back_fans(dimensions) fan_cutout(80);
+		back_fans(dimensions) fan_cutout_hex(80, extra=[
+			[-1, 2], [0, 2], [1, 1],
+			[-1, 2+1], [0, 2+1], [1, 1+1],
+			[-1, -1], [0, -2], [1, -2],
+			[-1, -1-1], [0, -2-1], [1, -2-1],
+		]);
 		top_storage(dimensions) ssd_cage_cutout();
 		
 		bottom_tray(dimensions) {
@@ -153,9 +158,11 @@ module back_power_supply(dimensions) {
 }
 
 module back_fans(dimensions) {
-	//translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
-	//translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
-	translate([0, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	// Two fans:
+	/* translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children(); */
+	
+	translate([(55-25) / 2, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
 }
 
 module bottom_tray(dimensions, offset = atx_tray_offset()) {
@@ -271,15 +278,15 @@ module top_panel(dimensions = internal_size, thickness = 6) {
 		
 		zcorners() corner_cutout(dimensions);
 		
-		side_duct(dimensions) {
+		/* side_duct(dimensions) {
 			duct_cutout();
-		}
+		} */
 	}
 	
 	if ($preview) {
-		side_duct(dimensions) {
+		/* side_duct(dimensions) {
 			duct();
-		}
+		} */
 	}
 }
 
