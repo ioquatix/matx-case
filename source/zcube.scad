@@ -39,6 +39,7 @@ module reflect(axis = [1, 0, 0]) {
 module zsides(dimensions, thickness, inset=0) {
 	difference() {
 		zcube(dimensions + [thickness*2, thickness*2, 0]);
-		zcube(dimensions);
+		if (!$projection)
+			zcube(dimensions);
 	}
 }

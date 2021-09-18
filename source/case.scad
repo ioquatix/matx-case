@@ -162,7 +162,7 @@ module back_fans(dimensions) {
 	/* translate([-25, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
 	translate([55, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children(); */
 	
-	translate([(55-25) / 2, dimensions[1]/2, dimensions[2]/3*2]) rotate([0, 90, 90]) children();
+	translate([(55-25) / 2, dimensions[1]/2, dimensions[2]-47]) rotate([0, 90, 90]) children();
 }
 
 module bottom_tray(dimensions, offset = atx_tray_offset()) {
