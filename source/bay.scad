@@ -2,6 +2,8 @@
 use <bolts.scad>;
 use <zcube.scad>;
 
+$fn = 32;
+
 bay_dimensions = [100+10, 50+10, 40];
 button_clearance = 0.4;
 button_dimensions = [38-(button_clearance*2), 14-(button_clearance*2)];
@@ -61,6 +63,10 @@ module bay(thickness=6, tolerance=0.1) {
 		translate([0, 8, -18])
 		rotate([-61, 0, 0])
 		bay_usb_cutout();
+		
+		translate([0, 2, -18])
+		rotate([-61+90, 0, 0])
+		#bay_usbc_cutout();
 		
 		reflect()
 		mirror([0, 0, 1])
@@ -160,6 +166,31 @@ module bay_usb_cutout() {
 	}
 }
 
+module bay_usbc_cutout() {
+	render()
+	difference() {
+		union() {
+			zcube([27.2, 8, 1.6]);
+			translate([0, -24/2, 0])
+			zcube([14, 24, 1.6]);
+			
+			translate([0, 8/2 - 3, 1.6])
+			zcube([10.5+2, 4.6, 2]);
+		}
+	}
+	
+	reflect()
+	translate([19/2, 8/2 - 3, 6])
+	rotate([180, 0, 0])
+	hole(3.5, 6);
+	
+	color("white")
+	hull() {
+		translate([0, 8/2 - 3, 1.6])
+		rcube([10.5, 4.6, 10], 2);
+	}
+}
+
 module button_cutout(dimensions = button_dimensions, tolerance = 0.0) {
 	bottom = 11;
 	top = 11+7;
@@ -215,4 +246,5 @@ module bay_cutout(thickness = 6, dimensions = bay_dimensions) {
 }
 
 bay();
+/* bay_usbc_cutout(); */
 //color("red") bay_cutout();
