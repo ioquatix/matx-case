@@ -86,9 +86,9 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		reflect()
 		mirror([0, 0, 1])
-		translate([78/2, 4, 4])
+		translate([78/2 - 0.2, 4, 3.8])
 		translate(bay_offset)
-		# threaded_hole(3, 6);
+		threaded_hole(3, 6);
 		
 		bay_screws(thickness);
 	}
@@ -100,9 +100,9 @@ module bay(thickness=6, tolerance=0.1) {
 			switch_cutout();
 		}
 		
-		/* translate(bay_offset)
+		translate(bay_offset)
 		rotate([bay_angle, 0, 0])
-		bay_usb_pcb(); */
+		bay_usb_pcb();
 	}
 }
 
