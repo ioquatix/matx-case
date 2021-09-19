@@ -5,12 +5,31 @@ use <zcube.scad>;
 $fn = 32;
 
 bay_dimensions = [100+10, 50+10, 40];
+
+bay_offset = [0, 0, 0];
+bay_angle = -50;
+bay_spacing = 16;
+
 button_clearance = 0.4;
 button_dimensions = [38-(button_clearance*2), 14-(button_clearance*2)];
 button_offset = bay_dimensions[1]/2 - (button_dimensions[1]+(button_clearance*2))/2;
 
 module bay_interior_cutout(thickness = 6) {
-	union() {
+	inset = bay_dimensions[1];
+	
+	intersection() {
+		for (i = [-1:1]) {
+			translate([0, bay_spacing*i, 0])
+			translate(bay_offset)
+			rotate([bay_angle, 0, 0])
+			translate([0, -inset/2, -6])
+			zcube([bay_dimensions[0], inset, inset]);
+		}
+		
+		translate([0, 0, -thickness*2])
+		cylinder($fn=6, r=bay_dimensions[1]*0.8, h=thickness*4);
+	}
+	/* union() {
 		hull() {
 			half_button = button_dimensions[1]+(button_clearance*2);
 			
@@ -23,7 +42,7 @@ module bay_interior_cutout(thickness = 6) {
 			translate([0, -bay_dimensions[1]/4, -10])
 			zcube([bay_dimensions[0], bay_dimensions[1]/4, thickness/2]);
 		}
-	}
+	} */
 }
 
 module bay_led_cutout(tolerance = 0) {
@@ -60,17 +79,19 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		bay_interior_cutout();
 		
-		translate([0, 8, -18])
-		rotate([-61, 0, 0])
-		bay_usb_cutout();
+		translate(bay_offset)
+		rotate([bay_angle, 0, 0])
+		#bay_usb_cutout();
 		
-		translate([0, 2, -18])
-		rotate([-61+90, 0, 0])
+		translate(bay_offset)
+		translate([0, -bay_spacing, 0])
+		rotate([bay_angle, 0, 0])
 		#bay_usbc_cutout();
 		
 		reflect()
 		mirror([0, 0, 1])
 		translate([78/2, 5.5, 6])
+		translate(bay_offset)
 		# threaded_hole(3, 6);
 		
 		bay_screws(thickness);
@@ -83,9 +104,9 @@ module bay(thickness=6, tolerance=0.1) {
 			switch_cutout();
 		}
 		
-		translate([0, 8, -18])
-		rotate([-61, 0, 0])
-		bay_usb_pcb();
+		/* translate([0, 0, 0])
+		rotate([bay_angle, 0, 0])
+		bay_usb_pcb(); */
 	}
 }
 
@@ -114,80 +135,88 @@ module bay_holes(outset = 6, dimensions = bay_dimensions) {
 }
 
 module bay_usb_pcb() {
-	render()
-	difference() {
-		zcube([75, 21, 1.6]);
+	translate([0, 15, -5]) {
+		difference() {
+			zcube([75, 21, 1.6]);
+			reflect() {
+				translate([75/2, -6/2, 0])
+				zcube([4, 6, 1.6]);
+			}
+			
+			// PCB:
+			reflect()
+			translate([69.8/2, 21/2 - 6, 1.6 - 6])
+			screw_hole(3, 6, thickness=1.6, inset=4);
+		}
+		
+		color("white")
+		translate([0, 0, 1.6 + 7/2])
+		rotate([90, 0, 0])
 		reflect() {
-			translate([75/2, -6/2, 0])
-			zcube([4, 6, 1.6]);
+			translate([14/2, 0.8, -21/2]) {
+				cylinder(d=6, h=21+4);
+				rcube([12, 11.1-1.6, 21]);
+			}
+			
+			translate([46/2, 0, -21/2])
+			rcube([14.5, 7, 21+4]);
 		}
-		
-		// PCB:
-		reflect()
-		translate([69.8/2, 21/2 - 6, 1.6 - 6])
-		screw_hole(3, 6, thickness=1.6, inset=4);
-	}
-	
-	color("white")
-	translate([0, 0, 1.6 + 7/2])
-	rotate([90, 0, 0])
-	reflect() {
-		translate([14/2, 0.8, -21/2]) {
-			cylinder(d=6, h=21+4);
-			rcube([12, 11.1-1.6, 21]);
-		}
-		
-		translate([46/2, 0, -21/2])
-		rcube([14.5, 7, 21+4]);
 	}
 }
 
 module bay_usb_cutout() {
-	difference() {
-		zcube([75, 21, 1.6]);
+	translate([0, 15, -5]) {
+		difference() {
+			zcube([75, 21, 1.6]);
+			
+			// PCB:
+			reflect()
+			translate([70/2, 21/2 - 6, 1.6 - 6])
+			hole(3.2, 6);
+		}
 		
-		// PCB:
-		reflect()
-		translate([70/2, 21/2 - 6, 1.6 - 6])
-		hole(3.2, 6);
-	}
-	
-	zcube([66, 21, 1.6], f=-1);
-	zcube([66, 21, 11.1]);
-	
-	translate([0, 0, 1.6 + 7/2])
-	rotate([90, 0, 0])
-	reflect() {
-		translate([14/2, 0.8, -21/2])
-		cylinder(d=6+1, h=21+5);
+		zcube([66, 21, 1.6], f=-1);
+		zcube([66, 21, 11.1]);
 		
-		translate([46/2, 0, -21/2])
-		rcube([14.5+1, 7+1, 21+5]);
+		translate([0, 0, 1.6 + 7/2])
+		rotate([90, 0, 0])
+		reflect() {
+			translate([14/2, 0.8, -21/2])
+			cylinder(d=6+1, h=21+5);
+			
+			translate([46/2, 0, -21/2])
+			rcube([14.5+1, 7+1, 21+5]);
+		}
 	}
 }
 
-module bay_usbc_cutout() {
-	render()
-	difference() {
-		union() {
-			zcube([27.2, 8, 1.6]);
-			translate([0, -24/2, 0])
-			zcube([14, 24, 1.6]);
-			
-			translate([0, 8/2 - 3, 1.6])
-			zcube([10.5+2, 4.6, 2]);
+module bay_usbc_cutout(extrude = 10) {
+	translate([0, 11, -1])
+	rotate([90, 0, 0]) {
+		difference() {
+			union() {
+				translate([0, 0, -extrude]) {
+					zcube([27.2 + 2, 8 + 2, 1.6 + extrude]);
+					
+					translate([0, -24/2, 0])
+					zcube([14 + 2, 24, 1.6 + extrude]);
+				}
+				
+				translate([0, 8/2 - 3, 1.6])
+				zcube([10.5+2, 4.6, 2]);
+			}
 		}
-	}
-	
-	reflect()
-	translate([19/2, 8/2 - 3, 6])
-	rotate([180, 0, 0])
-	hole(3.5, 6);
-	
-	color("white")
-	hull() {
-		translate([0, 8/2 - 3, 1.6])
-		rcube([10.5, 4.6, 10], 2);
+		
+		reflect()
+		translate([19/2, 8/2 - 3, 6])
+		rotate([180, 0, 0])
+		hole(3.5, 6);
+		
+		color("white")
+		hull() {
+			translate([0, 8/2 - 3, 1.6])
+			rcube([10.5, 4.6, 10], 2);
+		}
 	}
 }
 
@@ -246,5 +275,6 @@ module bay_cutout(thickness = 6, dimensions = bay_dimensions) {
 }
 
 bay();
+/* bay_usb_cutout(); */
 /* bay_usbc_cutout(); */
 //color("red") bay_cutout();
