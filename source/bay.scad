@@ -4,11 +4,11 @@ use <zcube.scad>;
 
 $fn = 32;
 
-bay_dimensions = [100+10, 50+10, 40];
+bay_dimensions = [120, 80, 40];
 
-bay_offset = [0, 0, 0];
-bay_angle = -50;
-bay_spacing = 16;
+bay_offset = [0, 5.3, 0];
+bay_angle = -45;
+bay_spacing = 22;
 
 button_clearance = 0.4;
 button_dimensions = [38-(button_clearance*2), 14-(button_clearance*2)];
@@ -22,27 +22,13 @@ module bay_interior_cutout(thickness = 6) {
 			translate([0, bay_spacing*i, 0])
 			translate(bay_offset)
 			rotate([bay_angle, 0, 0])
-			translate([0, -inset/2, -6])
+			translate([0, -inset/2, -7.5])
 			zcube([bay_dimensions[0], inset, inset]);
 		}
 		
 		translate([0, 0, -thickness*2])
-		cylinder($fn=6, r=bay_dimensions[1]*0.8, h=thickness*4);
+		cylinder($fn=6, r1=bay_dimensions[1]*0.5, r2=bay_dimensions[1]*0.7, h=thickness*4);
 	}
-	/* union() {
-		hull() {
-			half_button = button_dimensions[1]+(button_clearance*2);
-			
-			translate([0, 0, 6])
-			zcube([bay_dimensions[0], bay_dimensions[1]-half_button, thickness*8]);
-			
-			translate([0, -bay_dimensions[1]/4, 6])
-			zcube([bay_dimensions[0], bay_dimensions[1]/2, thickness], f=-1);
-			
-			translate([0, -bay_dimensions[1]/4, -10])
-			zcube([bay_dimensions[0], bay_dimensions[1]/4, thickness/2]);
-		}
-	} */
 }
 
 module bay_led_cutout(tolerance = 0) {
@@ -58,12 +44,22 @@ module bay_led_cutout(tolerance = 0) {
 	}
 }
 
+module bay_form(thickness=6, tolerance=0.1) {
+	intersection() {
+		translate([0, 0, -thickness*2])
+		zcube([bay_dimensions[0]-tolerance*2, bay_dimensions[1]-tolerance*2, thickness * 3]);
+		
+		translate([0, 0, -thickness*4])
+		cylinder($fn=6, r=bay_dimensions[1]*0.7 + 4, h=thickness*5+0.2);
+	}
+	
+	translate([0, 0, -thickness*2])
+	zcube([bay_dimensions[0], bay_dimensions[1], thickness * 2]);
+}
+
 module bay(thickness=6, tolerance=0.1) {
 	difference() {
-		union() {
-			zcube([bay_dimensions[0]-tolerance*2, bay_dimensions[1]-tolerance*2, thickness]);
-			zcube([bay_dimensions[0]+12*2, bay_dimensions[1]+6, thickness*2], f=-1);
-		}
+		bay_form(thickness, tolerance);
 		
 		// Avoids unprintable curves around back of button:
 		translate([0, button_offset+2, 0])
@@ -81,16 +77,16 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		translate(bay_offset)
 		rotate([bay_angle, 0, 0])
-		#bay_usb_cutout();
+		bay_usb_cutout();
 		
 		translate(bay_offset)
 		translate([0, -bay_spacing, 0])
 		rotate([bay_angle, 0, 0])
-		#bay_usbc_cutout();
+		bay_usbc_cutout();
 		
 		reflect()
 		mirror([0, 0, 1])
-		translate([78/2, 5.5, 6])
+		translate([78/2, 4, 4])
 		translate(bay_offset)
 		# threaded_hole(3, 6);
 		
@@ -104,7 +100,7 @@ module bay(thickness=6, tolerance=0.1) {
 			switch_cutout();
 		}
 		
-		/* translate([0, 0, 0])
+		/* translate(bay_offset)
 		rotate([bay_angle, 0, 0])
 		bay_usb_pcb(); */
 	}
@@ -124,17 +120,15 @@ module bay_button() {
 	}
 }
 
-module bay_holes(outset = 6, dimensions = bay_dimensions) {
-	width = dimensions[0];
-	height = dimensions[1];
-	
-	for (offset = [-height/4:height/2:height/2]) {
-		translate([-width/2-outset, offset, 0]) children();
-		translate([width/2+outset, offset, 0]) children();
+module bay_holes(outset = 8, dimensions = bay_dimensions) {
+	reflect() {
+		translate([-dimensions[0]/2 + outset, dimensions[1]/2 - outset, 0]) children();
+		translate([-dimensions[0]/2 + outset, -dimensions[1]/2 + outset, 0]) children();
 	}
 }
 
 module bay_usb_pcb() {
+	render()
 	translate([0, 15, -5]) {
 		difference() {
 			zcube([75, 21, 1.6]);
@@ -210,7 +204,8 @@ module bay_usbc_cutout(extrude = 10) {
 		reflect()
 		translate([19/2, 8/2 - 3, 6])
 		rotate([180, 0, 0])
-		hole(3.5, 6);
+		/* hole(3.5, 6); */
+		threaded_hole(3, 6);
 		
 		color("white")
 		hull() {
@@ -259,13 +254,7 @@ module bay_screws(thickness = 6) {
 
 module bay_cutout(thickness = 6, dimensions = bay_dimensions) {
 	color("grey")
-	hull() {
-		translate([0, 0, 0])
-		zcube([dimensions[0], dimensions[1], thickness+0.2]);
-		
-		translate([0, 0, -22])
-		zcube([dimensions[0], dimensions[1]/2, thickness+0.2]);
-	}
+	bay_form(thickness, 0);
 	
 	bay_screws(thickness);
 	
@@ -275,6 +264,7 @@ module bay_cutout(thickness = 6, dimensions = bay_dimensions) {
 }
 
 bay();
+/* bay_usb_pcb(); */
 /* bay_usb_cutout(); */
 /* bay_usbc_cutout(); */
 //color("red") bay_cutout();
