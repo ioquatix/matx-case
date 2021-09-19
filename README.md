@@ -1,6 +1,6 @@
 # mATX Case
 
-This repository contains parts for constructing a small mATX compatible computer case. It contains both parts which need to be printed, and parts which need to be laser cut.
+This repository contains parts for constructing a small (~15L) mATX compatible computer case. It contains both parts which need to be printed, and parts which need to be laser cut.
 
 ![Case](photos/case-render.png)
 
