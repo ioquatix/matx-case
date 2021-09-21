@@ -178,19 +178,19 @@ module bay_usbc_cutout(extrude = 10) {
 				translate([0, 0, -extrude]) {
 					zcube([27.2 + 2, 8 + 2, 1.6 + extrude]);
 					
-					translate([0, -24/2, 0])
-					zcube([14 + 2, 24, 1.6 + extrude]);
+					// We add 2mm here to allow for a space for the cable/components to fit.
+					translate([0, -24/2 - 1, 0])
+					zcube([14, 24, 1.6 + extrude + 2]);
 				}
 				
-				translate([0, 8/2 - 3, 1.6])
-				zcube([10.5+2, 4.6, 2]);
+				translate([0, 0, 1.6])
+				zcube([14, 10, 2]);
 			}
 		}
 		
 		reflect()
-		translate([19/2, 8/2 - 3, 6])
+		translate([20/2, 8/2 - 3, 6])
 		rotate([180, 0, 0])
-		/* hole(3.5, 6); */
 		threaded_hole(3, 6);
 		
 		color("white")
