@@ -84,7 +84,7 @@ module fan_cutout_hex(diameter = 140, thickness = 6, inset = 0, extra = []) {
 	
 	render()
 	intersection() {
-		cylinder($fn=32, r=diameter/2, h=thickness);
+		cylinder(r=diameter/2, h=thickness);
 		
 		for (step_x = [-steps:steps]) {
 			x = hex_x(step_x, size);
