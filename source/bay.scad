@@ -6,12 +6,12 @@ $fn = 32;
 
 bay_dimensions = [120, 80, 40];
 
-bay_offset = [0, 5.3, 0];
+bay_offset = [0, 5.3, 0.5];
 bay_angle = -45;
 bay_spacing = 22;
 
-button_clearance = 0.4;
-button_dimensions = [38-(button_clearance*2), 14-(button_clearance*2)];
+button_clearance = 0.5;
+button_dimensions = [38-(button_clearance*2), 13-(button_clearance*2)];
 button_offset = bay_dimensions[1]/2 - (button_dimensions[1]+(button_clearance*2))/2;
 
 module bay_interior_cutout(thickness = 6) {
@@ -54,7 +54,7 @@ module bay_form(thickness=6, tolerance=0.1) {
 	}
 	
 	translate([0, 0, -thickness*2])
-	zcube([bay_dimensions[0], bay_dimensions[1], thickness * 2]);
+	zcube([bay_dimensions[0], bay_dimensions[1] + thickness*2, thickness * 2]);
 }
 
 module bay(thickness=6, tolerance=0.1) {
@@ -63,10 +63,10 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		// Avoids unprintable curves around back of button:
 		translate([0, button_offset+2, 0])
-		zcube([button_dimensions[0]+2, button_dimensions[1]+2, 6]);
+		zcube([button_dimensions[0]+button_clearance*2, button_dimensions[1]+2, 6]);
 		
 		translate([0, button_offset, -9-3]) {
-			button_cutout(tolerance=1);
+			button_cutout(tolerance=button_clearance);
 			
 			switch_cutout();
 			
@@ -86,14 +86,14 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		reflect()
 		mirror([0, 0, 1])
-		translate([78/2 - 0.2, 4, 3.8])
+		translate([78/2, 4, 3.8])
 		translate(bay_offset)
 		threaded_hole(3, 6);
 		
 		bay_screws(thickness);
 	}
 	
-	if ($preview) {
+	/* if ($preview) {
 		bay_button();
 		
 		translate([0, button_offset, -9-3]) {
@@ -103,21 +103,7 @@ module bay(thickness=6, tolerance=0.1) {
 		translate(bay_offset)
 		rotate([bay_angle, 0, 0])
 		bay_usb_pcb();
-	}
-}
-
-module bay_button() {
-	color("white")
-	render()
-	difference() {
-		translate([0, button_offset, -9-3]) {
-			difference() {
-				button();
-			}
-		}
-		
-		bay_interior_cutout();
-	}
+	} */
 }
 
 module bay_holes(outset = 8, dimensions = bay_dimensions) {
@@ -215,8 +201,8 @@ module bay_usbc_cutout(extrude = 10) {
 	}
 }
 
-module button_cutout(dimensions = button_dimensions, tolerance = 0.0) {
-	bottom = 11;
+module button_cutout(dimensions = button_dimensions, tolerance = 0.0, offset = 3) {
+	bottom = 11 - offset;
 	top = 11+7;
 	height = top - bottom;
 	
@@ -224,15 +210,25 @@ module button_cutout(dimensions = button_dimensions, tolerance = 0.0) {
 	rcube([dimensions[0]+tolerance*2, dimensions[1]+tolerance*2, height]);
 }
 
-module button(dimensions = button_dimensions, tolerance = 0.0) {
+module bay_button_form(dimensions = button_dimensions, tolerance = 0.0) {
 	color("white")
 	render()
 	difference() {
-		button_cutout(dimensions, tolerance);
+		button_cutout(dimensions, tolerance, 0);
 		switch_cutout(tolerance = 0.1);
 	}
 	
 	// switch_cutout(tolerance = 0.1);
+}
+
+module bay_button() {
+	color("white")
+	render()
+	difference() {
+		translate([0, button_offset, -9-3])
+		bay_button_form();
+		bay_interior_cutout();
+	}
 }
 
 module switch_cutout(tolerance = 0) {
