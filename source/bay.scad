@@ -50,11 +50,11 @@ module bay_form(thickness=6, tolerance=0.1) {
 		zcube([bay_dimensions[0]-tolerance*2, bay_dimensions[1]-tolerance*2, thickness * 3]);
 		
 		translate([0, 0, -thickness*4])
-		cylinder($fn=6, r=bay_dimensions[1]*0.7 + 4, h=thickness*5+0.2);
+		cylinder($fn=6, r=bay_dimensions[1]*0.7 + 4 - tolerance, h=thickness*5+0.2);
 	}
 	
 	translate([0, 0, -thickness*2])
-	zcube([bay_dimensions[0], bay_dimensions[1] + thickness*2, thickness * 2]);
+	rcube([bay_dimensions[0] + thickness, bay_dimensions[1] + thickness, thickness * 2], thickness);
 }
 
 module bay(thickness=6, tolerance=0.1) {
