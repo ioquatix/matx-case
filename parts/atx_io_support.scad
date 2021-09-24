@@ -1,4 +1,4 @@
 
 include <../source/case.scad>;
 
-duct();
+atx_io_support();
