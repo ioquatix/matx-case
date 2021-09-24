@@ -319,7 +319,7 @@ module bottom_panel(dimensions = internal_size, thickness = 6, inset = 2) {
 	render() difference() {
 		translate([0, 0, -thickness]) panel(dimensions, thickness);
 		
-		cable_clamps_top(dimensions) cable_clamp_cutout(48);
+		/* cable_clamps_top(dimensions) cable_clamp_cutout(48); */
 		cable_clamps_front(dimensions) cable_clamp_cutout(30);
 		
 		zcorners() corner_cutout(dimensions);
