@@ -86,14 +86,14 @@ module bay(thickness=6, tolerance=0.1) {
 		
 		reflect()
 		mirror([0, 0, 1])
-		translate([78/2, 4, 3.8])
+		translate([78/2, 1, 2.8])
 		translate(bay_offset)
 		threaded_hole(3, 6);
 		
 		bay_screws(thickness);
 	}
 	
-	/* if ($preview) {
+	if ($preview) {
 		bay_button();
 		
 		translate([0, button_offset, -9-3]) {
@@ -103,7 +103,7 @@ module bay(thickness=6, tolerance=0.1) {
 		translate(bay_offset)
 		rotate([bay_angle, 0, 0])
 		bay_usb_pcb();
-	} */
+	}
 }
 
 module bay_holes(outset = 8, dimensions = bay_dimensions) {
@@ -115,7 +115,7 @@ module bay_holes(outset = 8, dimensions = bay_dimensions) {
 
 module bay_usb_pcb() {
 	render()
-	translate([0, 15, -5]) {
+	translate([0, 14.5, -1.6 - 4]) {
 		difference() {
 			zcube([75, 21, 1.6]);
 			reflect() {
@@ -130,24 +130,25 @@ module bay_usb_pcb() {
 		}
 		
 		color("white")
-		translate([0, 0, 1.6 + 7/2])
+		translate([0, 0, 1.6 + 8/2])
 		rotate([90, 0, 0])
 		reflect() {
-			translate([14/2, 0.8, -21/2]) {
-				cylinder(d=6, h=21+4);
+			translate([14/2, 1, -21/2]) {
+				cylinder(d=6.5, h=21+4);
 				rcube([12, 11.1-1.6, 21]);
 			}
 			
 			translate([46/2, 0, -21/2])
-			rcube([14.5, 7, 21+4]);
+			rcube([14.5, 8, 21+4]);
 		}
 	}
 }
 
 module bay_usb_cutout() {
-	translate([0, 15, -5]) {
+	translate([0, 14.5, -1.6 - 4]) {
 		difference() {
-			zcube([75, 21, 1.6]);
+			// Add a little extra wiggle room 0.3mm each side:
+			zcube([75 + 0.6, 21, 1.6]);
 			
 			// PCB:
 			reflect()
@@ -155,17 +156,18 @@ module bay_usb_cutout() {
 			hole(3.2, 6);
 		}
 		
-		zcube([66, 21, 1.6], f=-1);
-		zcube([66, 21, 11.1]);
+		// Leave sufficient space for soldering:
+		zcube([66, 21, 3], f=-1);
+		zcube([66, 21, 12]);
 		
-		translate([0, 0, 1.6 + 7/2])
+		translate([0, 0, 1.6 + 8/2])
 		rotate([90, 0, 0])
 		reflect() {
-			translate([14/2, 0.8, -21/2])
+			translate([14/2, 1, -21/2])
 			cylinder(d=6+1, h=21+5);
 			
 			translate([46/2, 0, -21/2])
-			rcube([14.5+1, 7+1, 21+5]);
+			rcube([14.5+1, 8+1, 21+5]);
 		}
 	}
 }
@@ -260,7 +262,7 @@ module bay_cutout(thickness = 6, dimensions = bay_dimensions) {
 }
 
 bay();
-/* bay_usb_pcb(); */
-/* bay_usb_cutout(); */
+//bay_usb_pcb();
+//bay_usb_cutout();
 /* bay_usbc_cutout(); */
 //color("red") bay_cutout();
