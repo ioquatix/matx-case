@@ -1,5 +1,5 @@
 
-$radial_error = 0.1;
+RADIAL_ERROR = 0.1;
 
 $fn = $preview ? 24 : 128;
 
@@ -30,17 +30,17 @@ ISO262_COARSE_PITCH = [
 function screw_pitch(d) = lookup(d, ISO262_COARSE_PITCH);
 
 function fudge_factor(fn=$fn) = 1/cos(180/fn);
-function outer_radius(radius, fn=$fn, radial_error=$radial_error) = radius*fudge_factor(fn)+radial_error;
+function outer_radius(radius, fn=$fn, radial_error=RADIAL_ERROR) = radius*fudge_factor(fn)+radial_error;
 
-module sphere_outer(radius, fn=$fn, radial_error=$radial_error) {
+module sphere_outer(radius, fn=$fn, radial_error=RADIAL_ERROR) {
 	sphere(r=radius*fudge_factor(fn)+radial_error, $fn=fn);
 }
 
-module cylinder_outer(height, radius, fn=$fn, radial_error=$radial_error) {
+module cylinder_outer(height, radius, fn=$fn, radial_error=RADIAL_ERROR) {
 	cylinder(h=height,r=radius*fudge_factor(fn)+radial_error, $fn=fn);
 }
 
-module cylinder_inner(height, radius, fn=$fn, radial_error=$radial_error) {
+module cylinder_inner(height, radius, fn=$fn, radial_error=RADIAL_ERROR) {
 	cylinder(h=height,r=radius-radial_error,$fn=fn);
 }
 
@@ -79,7 +79,7 @@ module countersunk_screw_hole(diameter = 3, depth = 16, inset = 10, thickness = 
 	countersunk_hole(diameter, depth - insert, inset);
 }
 
-module countersunk_hole(diameter=3, depth=6, inset=10, pitch=0, radial_error=$radial_error) {
+module countersunk_hole(diameter=3, depth=6, inset=10, pitch=0, radial_error=RADIAL_ERROR) {
 	hole(diameter, depth, inset, pitch);
 	translate([0, 0, depth-diameter/2]) cylinder(r1=diameter/2+radial_error, r2=diameter+radial_error, h=diameter/2);
 }
